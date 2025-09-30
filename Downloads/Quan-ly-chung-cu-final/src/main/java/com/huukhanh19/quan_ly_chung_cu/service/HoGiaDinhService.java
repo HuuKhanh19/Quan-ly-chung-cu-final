@@ -46,6 +46,7 @@ public class HoGiaDinhService {
         if (!nhanKhauSeLamChuHo.getHoGiaDinh().getCccdChuHo().equals(cccdChuHoCu)) {
             throw new RuntimeException("Nhân khẩu được chỉ định không thuộc hộ gia đình này.");
         }
+
         String quanHeCuCuaChuHoMoi = nhanKhauSeLamChuHo.getQuanHe();
 
         HoGiaDinh hoGiaDinhMoi = hoGiaDinhMapper.createNewHoGiaDinh(hoGiaDinhCu, nhanKhauSeLamChuHo);
@@ -64,7 +65,22 @@ public class HoGiaDinhService {
         List<NhanKhau> allNhanKhauCu = nhanKhauRepository.findAllByHoGiaDinh_CccdChuHo(cccdChuHoCu);
         for (NhanKhau nk : allNhanKhauCu) {
             if (nk.getCccd().equals(cccdNhanKhauMoi)) {
+                // Nhân khẩu mới trở thành chủ hộ
                 nk.setQuanHe("Chủ hộ");
+            } else if (nk.getCccd().equals(cccdChuHoCu)) {
+                // Chủ hộ cũ đã được xử lý ở trên, giữ nguyên quan hệ mới
+                // (không cần set lại vì đã set trong nhanKhauCuaChuHoCu)
+            } else {
+                // Cập nhật quan hệ cho các thành viên còn lại
+                String quanHeCuVoiChuHoCu = nk.getQuanHe();
+                String quanHeMoiVoiChuHoMoi = capNhatQuanHeThanhVien(
+                        quanHeCuVoiChuHoCu,
+                        quanHeCuCuaChuHoMoi,
+                        quanHeMoiCuaChuHoCu,
+                        nk.getGioiTinh(),
+                        nhanKhauSeLamChuHo.getGioiTinh()
+                );
+                nk.setQuanHe(quanHeMoiVoiChuHoMoi);
             }
             nk.setHoGiaDinh(hoGiaDinhMoi);
         }
@@ -73,28 +89,89 @@ public class HoGiaDinhService {
         hoGiaDinhRepository.delete(hoGiaDinhCu);
     }
 
+    /**
+     * Cập nhật quan hệ của thành viên với chủ hộ mới
+     * @param quanHeVoiChuHoCu Quan hệ cũ của thành viên với chủ hộ cũ (VD: "Con")
+     * @param quanHeChuHoMoiVoiChuHoCu Quan hệ cũ của chủ hộ mới với chủ hộ cũ (VD: "Vợ")
+     * @param quanHeChuHoCuVoiChuHoMoi Quan hệ mới của chủ hộ cũ với chủ hộ mới (VD: "Chồng")
+     * @param gioiTinhThanhVien Giới tính của thành viên
+     * @param gioiTinhChuHoMoi Giới tính của chủ hộ mới
+     * @return Quan hệ mới của thành viên với chủ hộ mới
+     */
+    String capNhatQuanHeThanhVien(String quanHeVoiChuHoCu,
+                                  String quanHeChuHoMoiVoiChuHoCu,
+                                  String quanHeChuHoCuVoiChuHoMoi,
+                                  GioiTinh gioiTinhThanhVien,
+                                  GioiTinh gioiTinhChuHoMoi) {
+
+        if (quanHeVoiChuHoCu == null || quanHeVoiChuHoCu.isBlank()) {
+            return "Thành viên";
+        }
+
+        String qhCu = quanHeVoiChuHoCu.trim().toLowerCase();
+        String qhChuHoMoi = quanHeChuHoMoiVoiChuHoCu != null ?
+                quanHeChuHoMoiVoiChuHoCu.trim().toLowerCase() : "";
+
+        // Trường hợp 1: Con của chủ hộ cũ + Chủ hộ mới là vợ/chồng của chủ hộ cũ
+        // => Con của chủ hộ mới
+        if ((qhCu.equals("con") || qhCu.equals("con trai") || qhCu.equals("con gái")) &&
+                (qhChuHoMoi.equals("vợ") || qhChuHoMoi.equals("chồng"))) {
+            return "Con";
+        }
+
+        // Trường hợp 2: Con của chủ hộ cũ + Chủ hộ mới là con của chủ hộ cũ
+        // => Anh/chị/em với nhau
+        if ((qhCu.equals("con") || qhCu.equals("con trai") || qhCu.equals("con gái")) &&
+                (qhChuHoMoi.equals("con") || qhChuHoMoi.equals("con trai") || qhChuHoMoi.equals("con gái"))) {
+            return "Anh/Chị/Em";
+        }
+
+        // Trường hợp 3: Cháu của chủ hộ cũ + Chủ hộ mới là con của chủ hộ cũ
+        // => Con của chủ hộ mới
+        if ((qhCu.equals("cháu") || qhCu.equals("cháu trai") || qhCu.equals("cháu gái")) &&
+                (qhChuHoMoi.equals("con") || qhChuHoMoi.equals("con trai") || qhChuHoMoi.equals("con gái"))) {
+            return "Con";
+        }
+
+        // Trường hợp 4: Bố/Mẹ của chủ hộ cũ + Chủ hộ mới là con của chủ hộ cũ
+        // => Ông/Bà của chủ hộ mới
+        if ((qhCu.equals("bố") || qhCu.equals("mẹ")) &&
+                (qhChuHoMoi.equals("con") || qhChuHoMoi.equals("con trai") || qhChuHoMoi.equals("con gái"))) {
+            return gioiTinhThanhVien == GioiTinh.Nam ? "Ông" : "Bà";
+        }
+
+        // Trường hợp 5: Ông/Bà của chủ hộ cũ + Chủ hộ mới là con của chủ hộ cũ
+        // => Cụ (ông/bà cố) của chủ hộ mới
+        if ((qhCu.equals("ông") || qhCu.equals("bà")) &&
+                (qhChuHoMoi.equals("con") || qhChuHoMoi.equals("con trai") || qhChuHoMoi.equals("con gái"))) {
+            return "Cụ";
+        }
+
+        // Trường hợp 6: Vợ/Chồng của chủ hộ cũ + Chủ hộ mới là con của chủ hộ cũ
+        // => Bố/Mẹ của chủ hộ mới
+        if ((qhCu.equals("vợ") || qhCu.equals("chồng")) &&
+                (qhChuHoMoi.equals("con") || qhChuHoMoi.equals("con trai") || qhChuHoMoi.equals("con gái"))) {
+            return gioiTinhThanhVien == GioiTinh.Nam ? "Bố" : "Mẹ";
+        }
+
+        // Các trường hợp phức tạp khác hoặc không xác định được
+        return "Thành viên";
+    }
+
     String xacDinhQuanHeNguoc(String quanHe, GioiTinh gioiTinhChuHoMoi) {
-        // Trả về "Thành viên" nếu không có thông tin quan hệ
         if (quanHe == null || quanHe.isBlank()) {
             return "Thành viên";
         }
 
-        // Sử dụng switch expression để code ngắn gọn và an toàn hơn
         return switch (quanHe.trim().toLowerCase()) {
-            case "Vợ" -> "Chồng";
-            case "Chồng" -> "Vợ";
-
-            case "Con", "Con trai", "Con gái" ->
+            case "vợ" -> "Chồng";
+            case "chồng" -> "Vợ";
+            case "con", "con trai", "con gái" ->
                     (gioiTinhChuHoMoi == GioiTinh.Nam) ? "Bố" : "Mẹ";
-
-            case "Bố", "Mẹ" -> "Con";
-
-            case "Cháu", "Cháu trai", "Cháu gái" ->
+            case "bố", "mẹ" -> "Con";
+            case "cháu", "cháu trai", "cháu gái" ->
                     (gioiTinhChuHoMoi == GioiTinh.Nam) ? "Ông" : "Bà";
-
-            case "Ông", "Bà" -> "Cháu";
-
-            // Các trường hợp khác không xác định được thì mặc định là "Thành viên"
+            case "ông", "bà" -> "Cháu";
             default -> "Thành viên";
         };
     }
