@@ -17,7 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @Slf4j
 public class ApplicationInitConfig {
-//123
     PasswordEncoder passwordEncoder;
 
     @Bean
@@ -32,6 +31,28 @@ public class ApplicationInitConfig {
 
                 userRepository.save(user);
                 log.warn("Admin has been created with default password: admin, please change it");
+            }
+
+            if (userRepository.findByUsername("quanly").isEmpty()) {
+                User user = User.builder()
+                        .username("quanly")
+                        .password(passwordEncoder.encode("quanly"))
+                        .role(Role.QUANLY)
+                        .build();
+
+                userRepository.save(user);
+                log.warn("quanly has been created with default password: quanly, please change it");
+            }
+
+            if (userRepository.findByUsername("ketoan").isEmpty()) {
+                User user = User.builder()
+                        .username("ketoan")
+                        .password(passwordEncoder.encode("ketoan"))
+                        .role(Role.KETOAN)
+                        .build();
+
+                userRepository.save(user);
+                log.warn("ketoan has been created with default password: ketoan, please change it");
             }
         };
     }

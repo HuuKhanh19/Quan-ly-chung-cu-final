@@ -3,12 +3,16 @@ package com.huukhanh19.quan_ly_chung_cu.service;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.ChangeChuHoRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauCreationRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauUpdateRequest;
+import com.huukhanh19.quan_ly_chung_cu.dto.request.TachHoRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.TachHoResponse;
+import com.huukhanh19.quan_ly_chung_cu.entity.CanHo;
 import com.huukhanh19.quan_ly_chung_cu.entity.HoGiaDinh;
 import com.huukhanh19.quan_ly_chung_cu.entity.NhanKhau;
 import com.huukhanh19.quan_ly_chung_cu.enums.GioiTinh;
 import com.huukhanh19.quan_ly_chung_cu.mapper.HoGiaDinhMapper;
 import com.huukhanh19.quan_ly_chung_cu.mapper.NhanKhauMapper;
+import com.huukhanh19.quan_ly_chung_cu.repository.CanHoRepository;
 import com.huukhanh19.quan_ly_chung_cu.repository.HoGiaDinhRepository;
 import com.huukhanh19.quan_ly_chung_cu.repository.NhanKhauRepository;
 import lombok.AccessLevel;
@@ -19,7 +23,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @PreAuthorize("hasRole('QUANLY')")
@@ -30,6 +36,7 @@ import java.util.stream.Collectors;
 public class HoGiaDinhService {
     HoGiaDinhRepository hoGiaDinhRepository;
     NhanKhauRepository nhanKhauRepository;
+    CanHoRepository canHoRepository;
     HoGiaDinhMapper hoGiaDinhMapper;
     NhanKhauMapper nhanKhauMapper;
 
@@ -174,6 +181,66 @@ public class HoGiaDinhService {
             case "ông", "bà" -> "Cháu";
             default -> "Thành viên";
         };
+    }
+
+    // Trong file HoGiaDinhService.java
+
+    @Transactional // Bắt buộc: Đảm bảo tất cả các thao tác đều là một giao dịch
+    public void tachHo(String cccdChuHoCu, TachHoRequest request) {
+        // 1. LẤY CÁC ĐỐI TƯỢNG CẦN THIẾT TỪ DATABASE
+        HoGiaDinh hoGiaDinhCu = hoGiaDinhRepository.findById(cccdChuHoCu)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hộ gia đình gốc."));
+
+        NhanKhau chuHoMoi = nhanKhauRepository.findById(request.getCccdChuHoMoi())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân khẩu sẽ làm chủ hộ mới."));
+
+        CanHo canHoMoi = canHoRepository.findById(request.getIdCanHoMoi())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy căn hộ mới."));
+
+        // 2. VALIDATE DỮ LIỆU
+        if (!chuHoMoi.getHoGiaDinh().getCccdChuHo().equals(cccdChuHoCu)) {
+            throw new RuntimeException("Chủ hộ mới không thuộc hộ gia đình gốc.");
+        }
+
+        // 3. TẠO HỘ GIA ĐÌNH MỚI
+        HoGiaDinh hoGiaDinhMoi = HoGiaDinh.builder()
+                .cccdChuHo(chuHoMoi.getCccd())
+                .hoTenChuHo(chuHoMoi.getHoVaTen())
+                .canHo(canHoMoi) // Gán vào căn hộ mới
+                .soThanhVien(1) // Bắt đầu với 1 thành viên là chủ hộ
+                .ngaySinh(chuHoMoi.getNgaySinh())
+                .gioiTinh(chuHoMoi.getGioiTinh())
+                .trangThai("Đang ở")
+                .build();
+        hoGiaDinhRepository.save(hoGiaDinhMoi);
+
+        // 4. CHUYỂN CHỦ HỘ MỚI TỪ NHÂN KHẨU CŨ SANG HỘ MỚI
+        chuHoMoi.setHoGiaDinh(hoGiaDinhMoi);
+        chuHoMoi.setQuanHe("Chủ hộ");
+        nhanKhauRepository.save(chuHoMoi);
+
+        // 5. CHUYỂN CÁC THÀNH VIÊN KHÁC (NẾU CÓ)
+        int soNguoiChuyenDi = 1; // Bắt đầu đếm từ chủ hộ mới
+        if (request.getDanhSachCccdThanhVienChuyenDi() != null && !request.getDanhSachCccdThanhVienChuyenDi().isEmpty()) {
+            List<NhanKhau> cacThanhVienChuyenDi = nhanKhauRepository.findAllById(request.getDanhSachCccdThanhVienChuyenDi());
+
+            for(NhanKhau thanhVien : cacThanhVienChuyenDi) {
+                // Kiểm tra xem thành viên có thực sự thuộc hộ cũ không
+                if(thanhVien.getHoGiaDinh().getCccdChuHo().equals(cccdChuHoCu)) {
+                    thanhVien.setHoGiaDinh(hoGiaDinhMoi); // Chuyển sang hộ mới
+                    soNguoiChuyenDi++;
+                }
+            }
+            nhanKhauRepository.saveAll(cacThanhVienChuyenDi);
+        }
+
+        // 6. CẬP NHẬT LẠI SỐ LƯỢNG THÀNH VIÊN
+        hoGiaDinhMoi.setSoThanhVien(soNguoiChuyenDi);
+        hoGiaDinhRepository.save(hoGiaDinhMoi);
+
+        int soThanhVienCu = hoGiaDinhCu.getSoThanhVien() != null ? hoGiaDinhCu.getSoThanhVien() : 0;
+        hoGiaDinhCu.setSoThanhVien(soThanhVienCu - soNguoiChuyenDi);
+        hoGiaDinhRepository.save(hoGiaDinhCu);
     }
 
 }

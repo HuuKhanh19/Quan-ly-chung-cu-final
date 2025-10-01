@@ -3,8 +3,10 @@ package com.huukhanh19.quan_ly_chung_cu.controller;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.ChangeChuHoRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauCreationRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauUpdateRequest;
+import com.huukhanh19.quan_ly_chung_cu.dto.request.TachHoRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ApiResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.TachHoResponse;
 import com.huukhanh19.quan_ly_chung_cu.service.HoGiaDinhService;
 import com.huukhanh19.quan_ly_chung_cu.service.NhanKhauService;
 import jakarta.validation.Valid;
@@ -32,4 +34,14 @@ public class HoGiaDinhController {
         return ApiResponse.<String>builder().result("Thay đổi chủ hộ thành công!").build();
     }
 
+    // Trong file HoGiaDinhController.java
+
+    @PostMapping("/tach-ho/{cccdChuHoCu}")
+    public ApiResponse<String> tachHo(
+            @PathVariable String cccdChuHoCu,
+            @RequestBody @Valid TachHoRequest request) {
+
+        hoGiaDinhService.tachHo(cccdChuHoCu, request);
+        return ApiResponse.<String>builder().result("Tách hộ thành công!").build();
+    }
 }
