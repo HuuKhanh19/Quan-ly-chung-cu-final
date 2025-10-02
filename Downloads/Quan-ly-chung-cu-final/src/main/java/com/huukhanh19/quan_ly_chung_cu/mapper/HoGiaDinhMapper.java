@@ -21,7 +21,6 @@ public interface HoGiaDinhMapper {
     @Mapping(source = "nhanKhauMoi.email", target = "email")
     @Mapping(source = "hoGiaDinhCu.canHo", target = "canHo")
     @Mapping(source = "hoGiaDinhCu.soThanhVien", target = "soThanhVien")
-    @Mapping(source = "hoGiaDinhCu.tang", target = "tang")
     @Mapping(source = "hoGiaDinhCu.soXeMay", target = "soXeMay")
     @Mapping(source = "hoGiaDinhCu.soOto", target = "soOto")
     @Mapping(source = "hoGiaDinhCu.trangThai", target = "trangThai")

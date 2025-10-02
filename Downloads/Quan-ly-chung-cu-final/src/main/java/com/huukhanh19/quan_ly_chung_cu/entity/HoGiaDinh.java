@@ -21,8 +21,8 @@ public class HoGiaDinh {
     @Column(name = "cccd_chu_ho")
     String cccdChuHo;
 
-    @ManyToOne
-    @JoinColumn(name = "id_can_ho")
+    @OneToOne
+    @JoinColumn(name = "id_can_ho", unique = true) // 'unique = true' là bắt buộc cho OneToOne
     CanHo canHo;
 
     @Column(name = "so_thanh_vien")
@@ -37,8 +37,6 @@ public class HoGiaDinh {
 
     @Column(name = "ngay_sinh")
     LocalDate ngaySinh;
-
-    Integer tang;
 
     @Column(name = "dan_toc")
     String danToc;

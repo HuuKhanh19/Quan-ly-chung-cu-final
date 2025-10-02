@@ -33,6 +33,6 @@ public class CanHo {
     String diaChi;
 
     // Một căn hộ có thể có nhiều hộ gia đình (trường hợp cho thuê lại)
-    @OneToMany(mappedBy = "canHo")
-    Set<HoGiaDinh> hoGiaDinhs;
+    @OneToOne(mappedBy = "canHo", cascade = CascadeType.ALL, orphanRemoval = true)
+    private HoGiaDinh hoGiaDinh;
 }
