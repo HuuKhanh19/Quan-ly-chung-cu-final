@@ -1,11 +1,14 @@
 package com.huukhanh19.quan_ly_chung_cu.mapper;
 
+import com.huukhanh19.quan_ly_chung_cu.dto.response.HoGiaDinhResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.HoGiaDinh;
 import com.huukhanh19.quan_ly_chung_cu.entity.NhanKhau;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface HoGiaDinhMapper {
@@ -25,4 +28,9 @@ public interface HoGiaDinhMapper {
     @Mapping(source = "hoGiaDinhCu.soOto", target = "soOto")
     @Mapping(source = "hoGiaDinhCu.trangThai", target = "trangThai")
     HoGiaDinh createNewHoGiaDinh(HoGiaDinh hoGiaDinhCu, NhanKhau nhanKhauMoi);
+
+    @Mapping(source = "canHo.idCanHo", target = "idCanHo")
+    HoGiaDinhResponse toHoGiaDinhResponse(HoGiaDinh hoGiaDinh);
+
+    List<HoGiaDinhResponse> toHoGiaDinhResponseList(List<HoGiaDinh> hoGiaDinhs);
 }

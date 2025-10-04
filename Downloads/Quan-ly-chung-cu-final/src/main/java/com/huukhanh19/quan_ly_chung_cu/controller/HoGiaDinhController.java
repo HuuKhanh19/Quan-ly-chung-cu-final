@@ -5,6 +5,7 @@ import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauCreationRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauUpdateRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.TachHoRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ApiResponse;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.HoGiaDinhResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.TachHoResponse;
 import com.huukhanh19.quan_ly_chung_cu.service.HoGiaDinhService;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/ho-gia-dinh")
@@ -44,4 +47,20 @@ public class HoGiaDinhController {
         hoGiaDinhService.tachHo(cccdChuHoCu, request);
         return ApiResponse.<String>builder().result("Tách hộ thành công!").build();
     }
+
+    @GetMapping
+    public ApiResponse<List<HoGiaDinhResponse>> getAllHoGiaDinh() {
+        log.info("GET /ho-gia-dinh");
+        return ApiResponse.<List<HoGiaDinhResponse>>builder()
+                .result(hoGiaDinhService.getAllHoGiaDinh())
+                .build();
+    }
+
+//    @GetMapping("/{cccdChuHo}")
+//    public ApiResponse<HoGiaDinhResponse> getHoGiaDinhById(@PathVariable String cccdChuHo) {
+//        log.info("GET /ho-gia-dinh/{}", cccdChuHo);
+//        return ApiResponse.<HoGiaDinhResponse>builder()
+//                .result(hoGiaDinhService.getHoGiaDinhById(cccdChuHo))
+//                .build();
+//    }
 }

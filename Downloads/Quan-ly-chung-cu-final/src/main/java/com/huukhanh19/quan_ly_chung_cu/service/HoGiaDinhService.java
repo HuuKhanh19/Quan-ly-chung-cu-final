@@ -4,6 +4,7 @@ import com.huukhanh19.quan_ly_chung_cu.dto.request.ChangeChuHoRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauCreationRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauUpdateRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.TachHoRequest;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.HoGiaDinhResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.TachHoResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.CanHo;
@@ -467,4 +468,25 @@ public class HoGiaDinhService {
 
         return normalized;
     }
+
+    @Transactional(readOnly = true)
+    public List<HoGiaDinhResponse> getAllHoGiaDinh() {
+        log.info("Lấy tất cả hộ gia đình");
+
+        List<HoGiaDinh> hoGiaDinhs = hoGiaDinhRepository.findAll();
+
+        log.info("Tìm thấy {} hộ gia đình", hoGiaDinhs.size());
+
+        return hoGiaDinhMapper.toHoGiaDinhResponseList(hoGiaDinhs);
+    }
+
+//    @Transactional(readOnly = true)
+//    public HoGiaDinhResponse getHoGiaDinhById(String cccdChuHo) {
+//        log.info("Lấy hộ gia đình: {}", cccdChuHo);
+//
+//        HoGiaDinh hoGiaDinh = hoGiaDinhRepository.findById(cccdChuHo)
+//                .orElseThrow(() -> new RuntimeException("Không tìm thấy hộ gia đình"));
+//
+//        return hoGiaDinhMapper.toHoGiaDinhResponse(hoGiaDinh);
+//    }
 }
