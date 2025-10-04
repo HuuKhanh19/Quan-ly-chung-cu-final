@@ -16,6 +16,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @PreAuthorize("hasRole('QUANLY')")
 @Service
 @RequiredArgsConstructor
@@ -73,6 +75,28 @@ public class NhanKhauService {
         NhanKhau updatedNhanKhau = nhanKhauRepository.save(nhanKhau);
 
         return nhanKhauMapper.toNhanKhauResponse(updatedNhanKhau);
+    }
+
+    @Transactional(readOnly = true)
+    public List<NhanKhauResponse> getAllNhanKhau() {
+        log.info("Lấy tất cả nhân khẩu");
+
+        List<NhanKhau> nhanKhaus = nhanKhauRepository.findAll();
+
+        log.info("Tìm thấy {} nhân khẩu", nhanKhaus.size());
+
+        return nhanKhauMapper.toNhanKhauResponseList(nhanKhaus);
+    }
+
+    @Transactional(readOnly = true)
+    public List<NhanKhauResponse> getNhanKhauByHoGiaDinh(String cccdChuHo) {
+        log.info("Lấy nhân khẩu của hộ gia đình: {}", cccdChuHo);
+
+        List<NhanKhau> nhanKhaus = nhanKhauRepository.findAllByHoGiaDinh_CccdChuHo(cccdChuHo);
+
+        log.info("Tìm thấy {} nhân khẩu", nhanKhaus.size());
+
+        return nhanKhauMapper.toNhanKhauResponseList(nhanKhaus);
     }
 
 }

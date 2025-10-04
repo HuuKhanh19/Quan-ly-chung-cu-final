@@ -44,4 +44,21 @@ public class NhanKhauController {
                 .build();
     }
 
+    @GetMapping
+    public ApiResponse<List<NhanKhauResponse>> getAllNhanKhau() {
+        log.info("GET /nhan-khau");
+        return ApiResponse.<List<NhanKhauResponse>>builder()
+                .result(nhanKhauService.getAllNhanKhau())
+                .build();
+    }
+
+    @GetMapping("/ho-gia-dinh/{cccdChuHo}")
+    public ApiResponse<List<NhanKhauResponse>> getNhanKhauByHoGiaDinh(
+            @PathVariable String cccdChuHo) {
+        log.info("GET /nhan-khau/ho-gia-dinh/{}", cccdChuHo);
+        return ApiResponse.<List<NhanKhauResponse>>builder()
+                .result(nhanKhauService.getNhanKhauByHoGiaDinh(cccdChuHo))
+                .build();
+    }
+
 }

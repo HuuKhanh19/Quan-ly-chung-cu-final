@@ -14,12 +14,15 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface NhanKhauMapper {
     NhanKhau toNhanKhau(NhanKhauCreationRequest request);
 
     @Mapping(source = "hoGiaDinh.cccdChuHo", target = "cccdChuHo")
     NhanKhauResponse toNhanKhauResponse(NhanKhau nhanKhau);
+    List<NhanKhauResponse> toNhanKhauResponseList(List<NhanKhau> nhanKhaus);
 
     @Mapping(target = "hoGiaDinh", ignore = true)
     void updateNhanKhau(@MappingTarget NhanKhau nhanKhau, NhanKhauUpdateRequest request);
