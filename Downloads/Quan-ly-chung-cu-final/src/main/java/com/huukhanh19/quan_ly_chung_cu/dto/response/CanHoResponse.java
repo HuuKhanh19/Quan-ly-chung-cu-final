@@ -1,8 +1,11 @@
 package com.huukhanh19.quan_ly_chung_cu.dto.response;
 
+import com.huukhanh19.quan_ly_chung_cu.entity.HoGiaDinh;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -10,12 +13,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TamVangResponse {
-    String cccd;
-    String hoVaTen;
+public class CanHoResponse {
     Integer idCanHo;
-    LocalDate ngayBatDau;
-    LocalDate ngayKetThuc;
-    String lyDo;
-    String trangThai;
+    String soNha;
+    String loaiCanHo;
+    BigDecimal dienTich;
+    String diaChi;
 }

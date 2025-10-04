@@ -12,15 +12,15 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class TamVangRequest {
-    private String cccd; // CCCD của người đăng ký
+    String cccd; // CCCD của người đăng ký
 
-    private Integer idCanHo; // Căn hộ mà người này đang ở
+    Integer idCanHo; // Căn hộ mà người này đang ở
 
     @FutureOrPresent(message = "NGAY_BAT_DAU_INVALID")
-    private LocalDate ngayBatDau;
+    LocalDate ngayBatDau;
 
     @FutureOrPresent(message = "NGAY_KET_THUC_INVALID")
-    private LocalDate ngayKetThuc;
+    LocalDate ngayKetThuc;
 
-    private String lyDo;
+    String lyDo;
 }

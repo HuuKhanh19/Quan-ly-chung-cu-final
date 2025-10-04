@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class TamVangController {
-    private final TamVangService tamVangService;
+    TamVangService tamVangService;
 
     @PostMapping
     public ApiResponse<TamVangResponse> createTamVang(@RequestBody @Valid TamVangRequest request) {
