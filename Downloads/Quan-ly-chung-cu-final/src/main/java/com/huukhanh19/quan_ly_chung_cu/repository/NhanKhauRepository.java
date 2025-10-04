@@ -1,6 +1,7 @@
 package com.huukhanh19.quan_ly_chung_cu.repository;
 
 import com.huukhanh19.quan_ly_chung_cu.entity.NhanKhau;
+import com.huukhanh19.quan_ly_chung_cu.enums.GioiTinh;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -37,4 +38,6 @@ public interface NhanKhauRepository extends JpaRepository<NhanKhau, String> {
      * Kiểm tra Email đã tồn tại chưa (trừ CCCD hiện tại)
      */
     boolean existsByEmailAndCccdNot(String email, String cccd);
+
+    long countByGioiTinh(GioiTinh gioiTinh);
 }
