@@ -1,6 +1,7 @@
 package com.huukhanh19.quan_ly_chung_cu.controller;
 
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ApiResponse;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeDoTuoiResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeGioiTinhResponse;
 import com.huukhanh19.quan_ly_chung_cu.service.ThongKeService;
 import lombok.AccessLevel;
@@ -23,6 +24,15 @@ public class ThongKeController {
     public ApiResponse<ThongKeGioiTinhResponse> thongKeTheoGioiTinh() {
         return ApiResponse.<ThongKeGioiTinhResponse>builder()
                 .result(thongKeService.thongKeTheoGioiTinh())
+                .build();
+    }
+
+    // Trong file ThongKeController.java
+
+    @GetMapping("/do-tuoi")
+    public ApiResponse<ThongKeDoTuoiResponse> thongKeTheoDoTuoi() {
+        return ApiResponse.<ThongKeDoTuoiResponse>builder()
+                .result(thongKeService.thongKeTheoDoTuoi())
                 .build();
     }
 }
