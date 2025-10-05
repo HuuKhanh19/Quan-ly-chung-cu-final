@@ -1,7 +1,9 @@
 package com.huukhanh19.quan_ly_chung_cu.service;
 
+import com.huukhanh19.quan_ly_chung_cu.dto.request.ThongKeThoiGianRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeDoTuoiResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeGioiTinhResponse;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeThoiGianResponse;
 import com.huukhanh19.quan_ly_chung_cu.enums.GioiTinh;
 import com.huukhanh19.quan_ly_chung_cu.repository.NhanKhauRepository;
 import lombok.AccessLevel;
@@ -61,4 +63,23 @@ public class ThongKeService {
                 .tongSo(nhanKhauRepository.count()) // Lấy tổng số từ repository
                 .build();
     }
+
+    public ThongKeThoiGianResponse thongKeNhanKhauTheoThoiGian(ThongKeThoiGianRequest request) {
+        // 1. Validate: Đảm bảo ngày bắt đầu không sau ngày kết thúc
+        if (request.getNgayBatDau().isAfter(request.getNgayKetThuc())) {
+            throw new RuntimeException("Ngày bắt đầu không được sau ngày kết thúc.");
+        }
+
+        // 2. Gọi phương thức đếm từ repository
+        long soLuong = nhanKhauRepository.countByNgayTaoBetween(
+                request.getNgayBatDau(),
+                request.getNgayKetThuc()
+        );
+
+        // 3. Xây dựng và trả về đối tượng response
+        return ThongKeThoiGianResponse.builder()
+                .soLuongNhanKhauMoi(soLuong)
+                .build();
+    }
+
 }

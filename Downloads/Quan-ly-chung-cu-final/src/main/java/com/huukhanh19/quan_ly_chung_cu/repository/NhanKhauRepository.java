@@ -55,4 +55,7 @@ public interface NhanKhauRepository extends JpaRepository<NhanKhau, String> {
     // Đếm số người sinh trước một ngày nhất định (ví dụ: người cao tuổi)
     @Query("SELECT COUNT(nk) FROM NhanKhau nk WHERE nk.ngaySinh <= :endDate")
     long countByNgaySinhBefore(@Param("endDate") LocalDate endDate);
+
+    @Query("SELECT COUNT(nk) FROM NhanKhau nk WHERE nk.ngayTao BETWEEN :startDate AND :endDate")
+    long countByNgayTaoBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }
