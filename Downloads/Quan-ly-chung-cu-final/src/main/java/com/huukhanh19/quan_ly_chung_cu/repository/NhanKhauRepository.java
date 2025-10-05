@@ -3,13 +3,16 @@ package com.huukhanh19.quan_ly_chung_cu.repository;
 import com.huukhanh19.quan_ly_chung_cu.entity.NhanKhau;
 import com.huukhanh19.quan_ly_chung_cu.enums.GioiTinh;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
 
-public interface NhanKhauRepository extends JpaRepository<NhanKhau, String> {
+@Repository
+public interface NhanKhauRepository extends JpaRepository<NhanKhau, String>, JpaSpecificationExecutor<NhanKhau> {
     boolean existsByCccd(String cccd);
     List<NhanKhau> findAllByHoGiaDinh_CccdChuHo(String cccdChuHo);
     /**

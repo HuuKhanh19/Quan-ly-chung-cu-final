@@ -1,9 +1,6 @@
 package com.huukhanh19.quan_ly_chung_cu.controller;
 
-import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauCreationRequest;
-import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauUpdateRequest;
-import com.huukhanh19.quan_ly_chung_cu.dto.request.UserCreationRequest;
-import com.huukhanh19.quan_ly_chung_cu.dto.request.UserUpdateRequest;
+import com.huukhanh19.quan_ly_chung_cu.dto.request.*;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ApiResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.UserResponse;
@@ -58,6 +55,15 @@ public class NhanKhauController {
         log.info("GET /nhan-khau/ho-gia-dinh/{}", cccdChuHo);
         return ApiResponse.<List<NhanKhauResponse>>builder()
                 .result(nhanKhauService.getNhanKhauByHoGiaDinh(cccdChuHo))
+                .build();
+    }
+
+    // Trong file NhanKhauController.java
+
+    @PostMapping("/search")
+    public ApiResponse<List<NhanKhauResponse>> searchNhanKhau(@RequestBody NhanKhauSearchRequest request) {
+        return ApiResponse.<List<NhanKhauResponse>>builder()
+                .result(nhanKhauService.searchNhanKhau(request))
                 .build();
     }
 

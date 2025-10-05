@@ -1,6 +1,7 @@
 package com.huukhanh19.quan_ly_chung_cu.service;
 
 import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauCreationRequest;
+import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauSearchRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauUpdateRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.HoGiaDinh;
@@ -8,15 +9,20 @@ import com.huukhanh19.quan_ly_chung_cu.entity.NhanKhau;
 import com.huukhanh19.quan_ly_chung_cu.mapper.NhanKhauMapper;
 import com.huukhanh19.quan_ly_chung_cu.repository.HoGiaDinhRepository;
 import com.huukhanh19.quan_ly_chung_cu.repository.NhanKhauRepository;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @PreAuthorize("hasRole('QUANLY')")
 @Service
@@ -97,6 +103,43 @@ public class NhanKhauService {
         log.info("Tìm thấy {} nhân khẩu", nhanKhaus.size());
 
         return nhanKhauMapper.toNhanKhauResponseList(nhanKhaus);
+    }
+
+    public List<NhanKhauResponse> searchNhanKhau(NhanKhauSearchRequest request) {
+        // Xây dựng bộ tiêu chí tìm kiếm (Specification)
+        Specification<NhanKhau> spec = (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Tiêu chí 1: Tìm theo CCCD (nếu có)
+            if (request.getCccd() != null && !request.getCccd().isBlank()) {
+                predicates.add(criteriaBuilder.equal(root.get("cccd"), request.getCccd()));
+            }
+
+            // Tiêu chí 2: Tìm theo CCCD Chủ Hộ (nếu có)
+            if (request.getCccdChuHo() != null && !request.getCccdChuHo().isBlank()) {
+                Join<NhanKhau, HoGiaDinh> hoGiaDinhJoin = root.join("hoGiaDinh");
+                predicates.add(criteriaBuilder.equal(hoGiaDinhJoin.get("cccdChuHo"), request.getCccdChuHo()));
+            }
+
+            // Tiêu chí 3: Tìm theo Tên (tìm kiếm gần đúng)
+            if (request.getHoVaTen() != null && !request.getHoVaTen().isBlank()) {
+                predicates.add(criteriaBuilder.like(root.get("hoVaTen"), "%" + request.getHoVaTen() + "%"));
+            }
+
+            // Tiêu chí 4: Tìm theo Giới tính (nếu có)
+            if (request.getGioiTinh() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("gioiTinh"), request.getGioiTinh()));
+            }
+
+            // Kết hợp tất cả các tiêu chí bằng mệnh đề AND
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+
+        List<NhanKhau> results = nhanKhauRepository.findAll(spec);
+
+        return results.stream()
+                .map(nhanKhauMapper::toNhanKhauResponse)
+                .collect(Collectors.toList());
     }
 
 }
