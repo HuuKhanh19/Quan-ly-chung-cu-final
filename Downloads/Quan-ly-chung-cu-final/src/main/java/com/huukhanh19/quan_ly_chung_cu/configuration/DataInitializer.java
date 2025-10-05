@@ -50,7 +50,7 @@ public class DataInitializer {
         HoGiaDinh hoGiaDinh1 = new HoGiaDinh();
         hoGiaDinh1.setCccdChuHo("012345678999");
         hoGiaDinh1.setHoTenChuHo("Nguyễn Văn A");
-        hoGiaDinh1.setGioiTinh(GioiTinh.Nam);
+        hoGiaDinh1.setGioiTinh(GioiTinh.NAM);
         hoGiaDinh1.setNgaySinh(LocalDate.of(1980, 5, 20));
         hoGiaDinh1.setDanToc("Kinh");
         hoGiaDinh1.setTonGiao("Không");
@@ -69,7 +69,7 @@ public class DataInitializer {
                 .cccd("012345678999")
                 .hoGiaDinh(hoGiaDinh1)
                 .hoVaTen("Nguyễn Văn A")
-                .gioiTinh(GioiTinh.Nam)
+                .gioiTinh(GioiTinh.NAM)
                 .ngaySinh(LocalDate.of(1980, 5, 20))
                 .danToc("Kinh")
                 .tonGiao("Không")
@@ -85,7 +85,7 @@ public class DataInitializer {
                 .cccd("987654321111")
                 .hoGiaDinh(hoGiaDinh1)
                 .hoVaTen("Trần Thị B")
-                .gioiTinh(GioiTinh.Nữ)
+                .gioiTinh(GioiTinh.NU)
                 .ngaySinh(LocalDate.of(1985, 3, 15))
                 .danToc("Kinh")
                 .tonGiao("Không")
@@ -101,7 +101,7 @@ public class DataInitializer {
                 .cccd("112233445566")
                 .hoGiaDinh(hoGiaDinh1)
                 .hoVaTen("Nguyễn Văn C")
-                .gioiTinh(GioiTinh.Khác)
+                .gioiTinh(GioiTinh.KHAC)
                 .ngaySinh(LocalDate.of(2010, 9, 10))
                 .danToc("Kinh")
                 .tonGiao("Không")
@@ -129,7 +129,7 @@ public class DataInitializer {
         HoGiaDinh hoGiaDinh2 = new HoGiaDinh();
         hoGiaDinh2.setCccdChuHo("123456789000");
         hoGiaDinh2.setHoTenChuHo("Phạm Văn D");
-        hoGiaDinh2.setGioiTinh(GioiTinh.Nam);
+        hoGiaDinh2.setGioiTinh(GioiTinh.NAM);
         hoGiaDinh2.setNgaySinh(LocalDate.of(1990, 7, 10));
         hoGiaDinh2.setDanToc("Kinh");
         hoGiaDinh2.setTonGiao("Không");
@@ -148,7 +148,7 @@ public class DataInitializer {
                 .cccd("123456789000")
                 .hoGiaDinh(hoGiaDinh2)
                 .hoVaTen("Phạm Văn D")
-                .gioiTinh(GioiTinh.Nam)
+                .gioiTinh(GioiTinh.NAM)
                 .ngaySinh(LocalDate.of(1990, 7, 10))
                 .danToc("Kinh")
                 .tonGiao("Không")
@@ -164,7 +164,7 @@ public class DataInitializer {
                 .cccd("223344556677")
                 .hoGiaDinh(hoGiaDinh2)
                 .hoVaTen("Lê Thị E")
-                .gioiTinh(GioiTinh.Nữ)
+                .gioiTinh(GioiTinh.NU)
                 .ngaySinh(LocalDate.of(1992, 4, 25))
                 .danToc("Kinh")
                 .tonGiao("Không")

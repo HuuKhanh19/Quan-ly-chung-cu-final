@@ -1,12 +1,8 @@
 package com.huukhanh19.quan_ly_chung_cu.service;
 
 import com.huukhanh19.quan_ly_chung_cu.dto.request.ChangeChuHoRequest;
-import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauCreationRequest;
-import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauUpdateRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.TachHoRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.HoGiaDinhResponse;
-import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
-import com.huukhanh19.quan_ly_chung_cu.dto.response.TachHoResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.CanHo;
 import com.huukhanh19.quan_ly_chung_cu.entity.HoGiaDinh;
 import com.huukhanh19.quan_ly_chung_cu.entity.NhanKhau;
@@ -25,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @PreAuthorize("hasRole('QUANLY')")
 @Service
@@ -235,7 +230,7 @@ public class HoGiaDinhService {
         // => Ông/Bà của chủ hộ mới
         if ((qhCu.equals("bố") || qhCu.equals("mẹ")) &&
                 (qhChuHoMoi.equals("con") || qhChuHoMoi.equals("con trai") || qhChuHoMoi.equals("con gái"))) {
-            return gioiTinhThanhVien == GioiTinh.Nam ? "Ông" : "Bà";
+            return gioiTinhThanhVien == GioiTinh.NAM ? "Ông" : "Bà";
         }
 
         // Trường hợp 5: Ông/Bà của chủ hộ cũ + Chủ hộ mới là con của chủ hộ cũ
@@ -249,7 +244,7 @@ public class HoGiaDinhService {
         // => Bố/Mẹ của chủ hộ mới
         if ((qhCu.equals("vợ") || qhCu.equals("chồng")) &&
                 (qhChuHoMoi.equals("con") || qhChuHoMoi.equals("con trai") || qhChuHoMoi.equals("con gái"))) {
-            return gioiTinhThanhVien == GioiTinh.Nam ? "Bố" : "Mẹ";
+            return gioiTinhThanhVien == GioiTinh.NAM ? "Bố" : "Mẹ";
         }
 
         // Các trường hợp phức tạp khác hoặc không xác định được
@@ -265,10 +260,10 @@ public class HoGiaDinhService {
             case "vợ" -> "Chồng";
             case "chồng" -> "Vợ";
             case "con", "con trai", "con gái" ->
-                    (gioiTinhChuHoMoi == GioiTinh.Nam) ? "Bố" : "Mẹ";
+                    (gioiTinhChuHoMoi == GioiTinh.NAM) ? "Bố" : "Mẹ";
             case "bố", "mẹ" -> "Con";
             case "cháu", "cháu trai", "cháu gái" ->
-                    (gioiTinhChuHoMoi == GioiTinh.Nam) ? "Ông" : "Bà";
+                    (gioiTinhChuHoMoi == GioiTinh.NAM) ? "Ông" : "Bà";
             case "ông", "bà" -> "Cháu";
             default -> "Thành viên";
         };
@@ -441,9 +436,9 @@ public class HoGiaDinhService {
             return switch (qhThanhVien) {
                 case "con" -> "Con"; // Con của chủ hộ cũ vẫn là con của vợ/chồng
                 case "cháu" -> "Cháu";
-                case "bố", "mẹ" -> gioiTinhThanhVien == GioiTinh.Nam ?
+                case "bố", "mẹ" -> gioiTinhThanhVien == GioiTinh.NAM ?
                         "Bố chồng/vợ" : "Mẹ chồng/vợ";
-                case "ông", "bà" -> gioiTinhThanhVien == GioiTinh.Nam ? "Ông" : "Bà";
+                case "ông", "bà" -> gioiTinhThanhVien == GioiTinh.NAM ? "Ông" : "Bà";
                 case "anh/chị/em" -> "Anh/Chị/Em chồng/vợ";
                 default -> "Thành viên";
             };
@@ -452,10 +447,10 @@ public class HoGiaDinhService {
         // ===== TRƯỜNG HỢP 2: Chủ hộ mới là con của chủ hộ cũ =====
         if (qhChuHoMoi.equals("con")) {
             return switch (qhThanhVien) {
-                case "vợ", "chồng" -> gioiTinhThanhVien == GioiTinh.Nam ? "Bố" : "Mẹ";
+                case "vợ", "chồng" -> gioiTinhThanhVien == GioiTinh.NAM ? "Bố" : "Mẹ";
                 case "con" -> "Anh/Chị/Em"; // Anh chị em với chủ hộ mới
                 case "cháu" -> "Con"; // Cháu của chủ hộ cũ có thể là con của chủ hộ mới
-                case "bố", "mẹ" -> gioiTinhThanhVien == GioiTinh.Nam ? "Ông" : "Bà";
+                case "bố", "mẹ" -> gioiTinhThanhVien == GioiTinh.NAM ? "Ông" : "Bà";
                 case "ông", "bà" -> "Cụ";
                 case "anh/chị/em" -> "Chú/Bác/Cô/Dì";
                 default -> "Thành viên";
@@ -469,8 +464,8 @@ public class HoGiaDinhService {
                 case "chồng" -> "Em rể/Anh rể";
                 case "con" -> "Cháu"; // Con của chủ hộ cũ là cháu của anh/chị/em
                 case "cháu" -> "Chắt";
-                case "bố", "mẹ" -> gioiTinhThanhVien == GioiTinh.Nam ? "Bố" : "Mẹ";
-                case "ông", "bà" -> gioiTinhThanhVien == GioiTinh.Nam ? "Ông" : "Bà";
+                case "bố", "mẹ" -> gioiTinhThanhVien == GioiTinh.NAM ? "Bố" : "Mẹ";
+                case "ông", "bà" -> gioiTinhThanhVien == GioiTinh.NAM ? "Ông" : "Bà";
                 case "anh/chị/em" -> "Anh/Chị/Em";
                 default -> "Thành viên";
             };
@@ -485,7 +480,7 @@ public class HoGiaDinhService {
                 case "cháu" -> "Chắt";
                 case "bố" -> "Chồng";
                 case "mẹ" -> "Vợ";
-                case "ông", "bà" -> gioiTinhThanhVien == GioiTinh.Nam ? "Bố" : "Mẹ";
+                case "ông", "bà" -> gioiTinhThanhVien == GioiTinh.NAM ? "Bố" : "Mẹ";
                 case "anh/chị/em" -> "Con";
                 default -> "Thành viên";
             };
@@ -494,8 +489,8 @@ public class HoGiaDinhService {
         // ===== TRƯỜNG HỢP 5: Chủ hộ mới là cháu của chủ hộ cũ =====
         if (qhChuHoMoi.equals("cháu")) {
             return switch (qhThanhVien) {
-                case "vợ", "chồng" -> gioiTinhThanhVien == GioiTinh.Nam ? "Ông" : "Bà";
-                case "con" -> gioiTinhThanhVien == GioiTinh.Nam ? "Bố" : "Mẹ";
+                case "vợ", "chồng" -> gioiTinhThanhVien == GioiTinh.NAM ? "Ông" : "Bà";
+                case "con" -> gioiTinhThanhVien == GioiTinh.NAM ? "Bố" : "Mẹ";
                 case "cháu" -> "Anh/Chị/Em"; // Các cháu với nhau là anh/chị/em
                 case "bố", "mẹ" -> "Cụ";
                 case "anh/chị/em" -> "Chú/Bác/Cô/Dì";

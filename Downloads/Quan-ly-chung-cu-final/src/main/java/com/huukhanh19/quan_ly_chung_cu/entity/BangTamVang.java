@@ -1,5 +1,7 @@
 package com.huukhanh19.quan_ly_chung_cu.entity;
 
+import com.huukhanh19.quan_ly_chung_cu.enums.GioiTinh;
+import com.huukhanh19.quan_ly_chung_cu.enums.LoaiDangKy;
 import com.huukhanh19.quan_ly_chung_cu.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -37,4 +39,7 @@ public class BangTamVang {
     @Column(name = "trang_thai")
     String trangThai;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "loai_dang_ky", nullable = false)
+    LoaiDangKy loaiDangKy;
 }

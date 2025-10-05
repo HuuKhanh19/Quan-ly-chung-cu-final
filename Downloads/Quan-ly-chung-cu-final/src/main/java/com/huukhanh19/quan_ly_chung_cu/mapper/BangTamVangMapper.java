@@ -8,12 +8,14 @@ import com.huukhanh19.quan_ly_chung_cu.dto.response.UserResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.BangTamVang;
 import com.huukhanh19.quan_ly_chung_cu.entity.User;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface BangTamVangMapper {
     BangTamVang toBangTamVang(TamVangRequest request);
 
+    @Mapping(source = "canHo.idCanHo", target = "idCanHo")
     TamVangResponse toTamVangResponse(BangTamVang bangTamVang);
 
 }

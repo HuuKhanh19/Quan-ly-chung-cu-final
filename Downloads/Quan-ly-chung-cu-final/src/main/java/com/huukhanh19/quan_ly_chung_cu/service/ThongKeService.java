@@ -25,9 +25,9 @@ public class ThongKeService {
 
     public ThongKeGioiTinhResponse thongKeTheoGioiTinh() {
         // 1. Gọi các phương thức đếm từ repository
-        long soLuongNam = nhanKhauRepository.countByGioiTinh(GioiTinh.Nam);
-        long soLuongNu = nhanKhauRepository.countByGioiTinh(GioiTinh.Nữ);
-        long soLuongKhac = nhanKhauRepository.countByGioiTinh(GioiTinh.Khác);
+        long soLuongNam = nhanKhauRepository.countByGioiTinh(GioiTinh.NAM);
+        long soLuongNu = nhanKhauRepository.countByGioiTinh(GioiTinh.NU);
+        long soLuongKhac = nhanKhauRepository.countByGioiTinh(GioiTinh.KHAC);
 
         // 2. Tính tổng
         long tongSo = soLuongNam + soLuongNu + soLuongKhac;

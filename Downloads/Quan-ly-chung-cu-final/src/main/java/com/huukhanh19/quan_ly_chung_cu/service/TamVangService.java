@@ -1,10 +1,12 @@
 package com.huukhanh19.quan_ly_chung_cu.service;
 
+import com.huukhanh19.quan_ly_chung_cu.dto.request.TamTruRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.TamVangRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.TamVangResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.BangTamVang;
 import com.huukhanh19.quan_ly_chung_cu.entity.CanHo;
 import com.huukhanh19.quan_ly_chung_cu.entity.NhanKhau;
+import com.huukhanh19.quan_ly_chung_cu.enums.LoaiDangKy;
 import com.huukhanh19.quan_ly_chung_cu.mapper.BangTamVangMapper;
 import com.huukhanh19.quan_ly_chung_cu.repository.BangTamVangRepository;
 import com.huukhanh19.quan_ly_chung_cu.repository.CanHoRepository;
@@ -28,30 +30,57 @@ public class TamVangService {
     CanHoRepository canHoRepository;
     BangTamVangMapper bangTamVangMapper;
 
+    // Logic cho Tạm vắng (dành cho cư dân đã tồn tại)
     @Transactional
     public TamVangResponse createTamVang(TamVangRequest request) {
-        // 1. Kiểm tra xem nhân khẩu và căn hộ có tồn tại không
+        // VALIDATE: Kiểm tra CCCD phải có trong NhanKhau
         NhanKhau nhanKhau = nhanKhauRepository.findById(request.getCccd())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân khẩu."));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân khẩu với CCCD này."));
 
+        // VALIDATE: Kiểm tra idCanHo phải đúng với căn hộ của nhân khẩu đó
+        if (nhanKhau.getHoGiaDinh() == null || nhanKhau.getHoGiaDinh().getCanHo() == null) {
+            throw new RuntimeException("Nhân khẩu này không thuộc hộ gia đình hoặc căn hộ nào.");
+        }
+
+        // Tạo đối tượng BangTamVang
+        BangTamVang tamVang = new BangTamVang();
+        tamVang.setCccd(nhanKhau.getCccd());
+        tamVang.setHoVaTen(nhanKhau.getHoVaTen());
+        tamVang.setCanHo(nhanKhau.getHoGiaDinh().getCanHo()); // Lấy CanHo trực tiếp từ nhân khẩu
+        tamVang.setNgayBatDau(request.getNgayBatDau());
+        tamVang.setNgayKetThuc(request.getNgayKetThuc());
+        tamVang.setLyDo(request.getLyDo());
+        tamVang.setLoaiDangKy(LoaiDangKy.TAM_VANG);
+        tamVang.setTrangThai("Chờ duyệt");
+
+        BangTamVang saved = bangTamVangRepository.save(tamVang);
+        return bangTamVangMapper.toTamVangResponse(saved);
+    }
+
+    // Logic cho Tạm trú (dành cho người ngoài)
+    @Transactional
+    public TamVangResponse createTamTru(TamTruRequest request) {
+        // VALIDATE: Kiểm tra CCCD không được có trong NhanKhau (phải là người ngoài)
+        if (nhanKhauRepository.existsById(request.getCccd())) {
+            throw new RuntimeException("Người này đã là nhân khẩu của chung cư, không thể đăng ký tạm trú.");
+        }
+
+        // Kiểm tra xem căn hộ mà người này sẽ ở có tồn tại không
         CanHo canHo = canHoRepository.findById(request.getIdCanHo())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy căn hộ."));
 
-        // (Tùy chọn) Kiểm tra xem nhân khẩu có thực sự thuộc căn hộ đó không
-        if (!nhanKhau.getHoGiaDinh().getCanHo().getIdCanHo().equals(request.getIdCanHo())) {
-            throw new RuntimeException("Nhân khẩu không thuộc căn hộ đã đăng ký.");
-        }
+        BangTamVang tamTru = new BangTamVang();
+        tamTru.setCccd(request.getCccd());
+        tamTru.setHoVaTen(request.getHoVaTen());
+        tamTru.setCanHo(canHo); // Gán căn hộ sẽ ở
+        tamTru.setNgayBatDau(request.getNgayBatDau());
+        tamTru.setNgayKetThuc(request.getNgayKetThuc());
+        tamTru.setLyDo(request.getLyDo());
+        tamTru.setLoaiDangKy(LoaiDangKy.TAM_TRU);
+        tamTru.setTrangThai("Chờ duyệt");
 
-        // 2. Chuyển đổi từ DTO sang Entity
-        BangTamVang tamVang = bangTamVangMapper.toBangTamVang(request);
-        tamVang.setHoVaTen(nhanKhau.getHoVaTen()); // Lấy họ tên từ nhân khẩu
-        tamVang.setCanHo(canHo);
-        tamVang.setTrangThai("Chờ duyệt"); // Trạng thái mặc định
-
-        // 3. Lưu vào database
-        BangTamVang savedTamVang = bangTamVangRepository.save(tamVang);
-
-        // 4. Trả về response
-        return bangTamVangMapper.toTamVangResponse(savedTamVang);
+        BangTamVang saved = bangTamVangRepository.save(tamTru);
+        return bangTamVangMapper.toTamVangResponse(saved);
     }
+
 }
