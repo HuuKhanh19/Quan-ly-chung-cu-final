@@ -3,8 +3,11 @@ package com.huukhanh19.quan_ly_chung_cu.service;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.ThongKeThoiGianRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeDoTuoiResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeGioiTinhResponse;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeTamVangResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeThoiGianResponse;
 import com.huukhanh19.quan_ly_chung_cu.enums.GioiTinh;
+import com.huukhanh19.quan_ly_chung_cu.enums.LoaiDangKy;
+import com.huukhanh19.quan_ly_chung_cu.repository.BangTamVangRepository;
 import com.huukhanh19.quan_ly_chung_cu.repository.NhanKhauRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import java.time.LocalDate;
 @PreAuthorize("hasRole('QUANLY')")
 public class ThongKeService {
     NhanKhauRepository nhanKhauRepository;
+    BangTamVangRepository bangTamVangRepository;
 
     public ThongKeGioiTinhResponse thongKeTheoGioiTinh() {
         // 1. Gọi các phương thức đếm từ repository
@@ -79,6 +83,19 @@ public class ThongKeService {
         // 3. Xây dựng và trả về đối tượng response
         return ThongKeThoiGianResponse.builder()
                 .soLuongNhanKhauMoi(soLuong)
+                .build();
+    }
+
+    public ThongKeTamVangResponse thongKeTamTruTamVang() {
+        // 1. Thống kê theo Loại đăng ký
+        long soLuongTamTru = bangTamVangRepository.countByLoaiDangKy(LoaiDangKy.TAM_TRU);
+        long soLuongTamVang = bangTamVangRepository.countByLoaiDangKy(LoaiDangKy.TAM_VANG);
+
+        // 2. Xây dựng và trả về đối tượng response
+        return ThongKeTamVangResponse.builder()
+                .soLuongTamTru(soLuongTamTru)
+                .soLuongTamVang(soLuongTamVang)
+                .tongSo(soLuongTamTru + soLuongTamVang)
                 .build();
     }
 

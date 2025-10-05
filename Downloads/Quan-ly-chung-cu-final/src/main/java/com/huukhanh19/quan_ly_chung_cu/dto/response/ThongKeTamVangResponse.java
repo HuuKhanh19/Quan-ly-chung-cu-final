@@ -1,0 +1,15 @@
+package com.huukhanh19.quan_ly_chung_cu.dto.response;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class ThongKeTamVangResponse {
+    long soLuongTamTru;
+    long soLuongTamVang;
+    long tongSo;
+}

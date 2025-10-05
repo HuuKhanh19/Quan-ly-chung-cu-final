@@ -51,7 +51,7 @@ public class TamVangService {
         tamVang.setNgayKetThuc(request.getNgayKetThuc());
         tamVang.setLyDo(request.getLyDo());
         tamVang.setLoaiDangKy(LoaiDangKy.TAM_VANG);
-        tamVang.setTrangThai("Chờ duyệt");
+        tamVang.setTrangThai("Thành Công");
 
         BangTamVang saved = bangTamVangRepository.save(tamVang);
         return bangTamVangMapper.toTamVangResponse(saved);
@@ -77,7 +77,7 @@ public class TamVangService {
         tamTru.setNgayKetThuc(request.getNgayKetThuc());
         tamTru.setLyDo(request.getLyDo());
         tamTru.setLoaiDangKy(LoaiDangKy.TAM_TRU);
-        tamTru.setTrangThai("Chờ duyệt");
+        tamTru.setTrangThai("Thành công");
 
         BangTamVang saved = bangTamVangRepository.save(tamTru);
         return bangTamVangMapper.toTamVangResponse(saved);

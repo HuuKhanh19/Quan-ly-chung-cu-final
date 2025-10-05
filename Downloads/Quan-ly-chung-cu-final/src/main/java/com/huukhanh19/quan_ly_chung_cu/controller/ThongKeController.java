@@ -1,10 +1,7 @@
 package com.huukhanh19.quan_ly_chung_cu.controller;
 
 import com.huukhanh19.quan_ly_chung_cu.dto.request.ThongKeThoiGianRequest;
-import com.huukhanh19.quan_ly_chung_cu.dto.response.ApiResponse;
-import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeDoTuoiResponse;
-import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeGioiTinhResponse;
-import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeThoiGianResponse;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.*;
 import com.huukhanh19.quan_ly_chung_cu.service.ThongKeService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -40,6 +37,13 @@ public class ThongKeController {
             @RequestBody @Valid ThongKeThoiGianRequest request) {
         return ApiResponse.<ThongKeThoiGianResponse>builder()
                 .result(thongKeService.thongKeNhanKhauTheoThoiGian(request))
+                .build();
+    }
+
+    @GetMapping("/tam-tru-tam-vang")
+    public ApiResponse<ThongKeTamVangResponse> thongKeTamTruTamVang() {
+        return ApiResponse.<ThongKeTamVangResponse>builder()
+                .result(thongKeService.thongKeTamTruTamVang())
                 .build();
     }
 
