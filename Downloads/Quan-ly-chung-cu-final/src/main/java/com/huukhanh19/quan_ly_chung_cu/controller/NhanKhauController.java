@@ -4,6 +4,7 @@ import com.huukhanh19.quan_ly_chung_cu.dto.request.*;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ApiResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.UserResponse;
+import com.huukhanh19.quan_ly_chung_cu.entity.LichSuThayDoi;
 import com.huukhanh19.quan_ly_chung_cu.service.NhanKhauService;
 import com.huukhanh19.quan_ly_chung_cu.service.UserService;
 import jakarta.validation.Valid;
@@ -64,6 +65,13 @@ public class NhanKhauController {
     public ApiResponse<List<NhanKhauResponse>> searchNhanKhau(@RequestBody NhanKhauSearchRequest request) {
         return ApiResponse.<List<NhanKhauResponse>>builder()
                 .result(nhanKhauService.searchNhanKhau(request))
+                .build();
+    }
+
+    @GetMapping("/history/{cccd}")
+    public ApiResponse<List<LichSuThayDoi>> getNhanKhauHistory(@PathVariable String cccd) {
+        return ApiResponse.<List<LichSuThayDoi>>builder()
+                .result(nhanKhauService.getHistory(cccd))
                 .build();
     }
 

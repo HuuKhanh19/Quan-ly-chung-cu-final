@@ -5,9 +5,11 @@ import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauSearchRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauUpdateRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.HoGiaDinh;
+import com.huukhanh19.quan_ly_chung_cu.entity.LichSuThayDoi;
 import com.huukhanh19.quan_ly_chung_cu.entity.NhanKhau;
 import com.huukhanh19.quan_ly_chung_cu.mapper.NhanKhauMapper;
 import com.huukhanh19.quan_ly_chung_cu.repository.HoGiaDinhRepository;
+import com.huukhanh19.quan_ly_chung_cu.repository.LichSuThayDoiRepository;
 import com.huukhanh19.quan_ly_chung_cu.repository.NhanKhauRepository;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
@@ -17,9 +19,11 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,6 +37,7 @@ public class NhanKhauService {
     NhanKhauRepository nhanKhauRepository;
     HoGiaDinhRepository hoGiaDinhRepository;
     NhanKhauMapper nhanKhauMapper;
+    LichSuThayDoiRepository lichSuThayDoiRepository;
 
     @Transactional
     public NhanKhauResponse createNhanKhau(NhanKhauCreationRequest request) {
@@ -50,6 +55,8 @@ public class NhanKhauService {
         hoGiaDinh.setSoThanhVien(currentMembers + 1);
 
         NhanKhau savedNhanKhau = nhanKhauRepository.save(nhanKhau);
+
+        ghiLaiLichSu(savedNhanKhau.getCccd(), "Tạo mới nhân khẩu.");
 
         return nhanKhauMapper.toNhanKhauResponse(savedNhanKhau);
     }
@@ -80,7 +87,22 @@ public class NhanKhauService {
 
         NhanKhau updatedNhanKhau = nhanKhauRepository.save(nhanKhau);
 
+        ghiLaiLichSu(cccd, "Cập nhật thông tin nhân khẩu.");
+
         return nhanKhauMapper.toNhanKhauResponse(updatedNhanKhau);
+    }
+
+    private void ghiLaiLichSu(String cccd, String hanhDong) {
+        // Lấy tên người dùng đang đăng nhập
+        String nguoiThucHien = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        LichSuThayDoi log = LichSuThayDoi.builder()
+                .cccdNhanKhau(cccd)
+                .thongTinThayDoi(hanhDong)
+                .ngayThayDoi(LocalDate.now())
+                .nguoiThucHien(nguoiThucHien)
+                .build();
+        lichSuThayDoiRepository.save(log);
     }
 
     @Transactional(readOnly = true)
@@ -140,6 +162,14 @@ public class NhanKhauService {
         return results.stream()
                 .map(nhanKhauMapper::toNhanKhauResponse)
                 .collect(Collectors.toList());
+    }
+
+    public List<LichSuThayDoi> getHistory(String cccd) {
+        // Kiểm tra xem nhân khẩu có tồn tại không
+        if (!nhanKhauRepository.existsById(cccd)) {
+            throw new RuntimeException("Không tìm thấy nhân khẩu.");
+        }
+        return lichSuThayDoiRepository.findAllByCccdNhanKhau(cccd);
     }
 
 }
