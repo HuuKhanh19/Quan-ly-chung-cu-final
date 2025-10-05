@@ -32,7 +32,6 @@ public class CanHo {
     @Column(name = "dia_chi", nullable = false)
     String diaChi;
 
-    // Một căn hộ có thể có nhiều hộ gia đình (trường hợp cho thuê lại)
     @OneToOne(mappedBy = "canHo", cascade = CascadeType.ALL, orphanRemoval = true)
     private HoGiaDinh hoGiaDinh;
 }

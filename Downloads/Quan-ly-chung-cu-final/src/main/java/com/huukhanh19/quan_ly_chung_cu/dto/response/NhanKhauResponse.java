@@ -25,4 +25,5 @@ public class NhanKhauResponse {
     String email;
     String quanHe;
     String trangThai;
+    LocalDate ngayTao;
 }

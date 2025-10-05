@@ -53,4 +53,12 @@ public class NhanKhau {
 
     @Column(name = "trang_thai")
     String trangThai;
+
+    @Column(name = "ngay_tao")
+    LocalDate ngayTao;
+
+    @PrePersist
+    public void onCreate() {
+        this.ngayTao = LocalDate.now();
+    }
 }

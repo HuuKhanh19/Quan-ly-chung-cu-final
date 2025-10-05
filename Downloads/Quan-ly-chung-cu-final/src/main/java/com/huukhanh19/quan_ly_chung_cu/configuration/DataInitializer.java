@@ -65,20 +65,53 @@ public class DataInitializer {
         hoGiaDinh1.setCanHo(canHo1);
         hoGiaDinhRepository.save(hoGiaDinh1);
 
-        NhanKhau chuHo1 = new NhanKhau("012345678999", hoGiaDinh1, "Nguyễn Văn A", GioiTinh.Nam,
-                LocalDate.of(1980, 5, 20), "Kinh", "Không", "Việt Nam",
-                "Tòa A, Chung cư XYZ, Hà Nội", "0901234567", "vana@example.com",
-                "Chủ hộ", "Đang ở");
+        NhanKhau chuHo1 = NhanKhau.builder()
+                .cccd("012345678999")
+                .hoGiaDinh(hoGiaDinh1)
+                .hoVaTen("Nguyễn Văn A")
+                .gioiTinh(GioiTinh.Nam)
+                .ngaySinh(LocalDate.of(1980, 5, 20))
+                .danToc("Kinh")
+                .tonGiao("Không")
+                .quocTich("Việt Nam")
+                .diaChi("Tòa A, Chung cư XYZ, Hà Nội")
+                .sdt("0901234567")
+                .email("vana@example.com")
+                .quanHe("Chủ hộ")
+                .trangThai("Đang ở")
+                .build();
 
-        NhanKhau vo1 = new NhanKhau("987654321111", hoGiaDinh1, "Trần Thị B", GioiTinh.Nữ,
-                LocalDate.of(1985, 3, 15), "Kinh", "Không", "Việt Nam",
-                "Tòa A, Chung cư XYZ, Hà Nội", "0911222333", "tranthib@example.com",
-                "Vợ", "Đang ở");
+        NhanKhau vo1 = NhanKhau.builder()
+                .cccd("987654321111")
+                .hoGiaDinh(hoGiaDinh1)
+                .hoVaTen("Trần Thị B")
+                .gioiTinh(GioiTinh.Nữ)
+                .ngaySinh(LocalDate.of(1985, 3, 15))
+                .danToc("Kinh")
+                .tonGiao("Không")
+                .quocTich("Việt Nam")
+                .diaChi("Tòa A, Chung cư XYZ, Hà Nội")
+                .sdt("0911222333")
+                .email("tranthib@example.com")
+                .quanHe("Vợ")
+                .trangThai("Đang ở")
+                .build();
 
-        NhanKhau con1 = new NhanKhau("112233445566", hoGiaDinh1, "Nguyễn Văn C", GioiTinh.Khác,
-                LocalDate.of(2010, 9, 10), "Kinh", "Không", "Việt Nam",
-                "Tòa A, Chung cư XYZ, Hà Nội", "0988777666", "nguyenvanc@example.com",
-                "Con", "Đang ở");
+        NhanKhau con1 = NhanKhau.builder()
+                .cccd("112233445566")
+                .hoGiaDinh(hoGiaDinh1)
+                .hoVaTen("Nguyễn Văn C")
+                .gioiTinh(GioiTinh.Khác)
+                .ngaySinh(LocalDate.of(2010, 9, 10))
+                .danToc("Kinh")
+                .tonGiao("Không")
+                .quocTich("Việt Nam")
+                .diaChi("Tòa A, Chung cư XYZ, Hà Nội")
+                .sdt("0988777666")
+                .email("nguyenvanc@example.com")
+                .quanHe("Con")
+                .trangThai("Đang ở")
+                .build();
 
         nhanKhauRepository.saveAll(Set.of(chuHo1, vo1, con1));
         log.info("✔ Khởi tạo xong hộ gia đình tại căn hộ A101 với 3 nhân khẩu.");
@@ -111,15 +144,37 @@ public class DataInitializer {
         hoGiaDinh2.setCanHo(canHo2);
         hoGiaDinhRepository.save(hoGiaDinh2);
 
-        NhanKhau chuHo2 = new NhanKhau("123456789000", hoGiaDinh2, "Phạm Văn D", GioiTinh.Nam,
-                LocalDate.of(1990, 7, 10), "Kinh", "Không", "Việt Nam",
-                "Tòa A, Chung cư XYZ, Hà Nội", "0933222111", "phamvand@example.com",
-                "Chủ hộ", "Đang ở");
+        NhanKhau chuHo2 = NhanKhau.builder()
+                .cccd("123456789000")
+                .hoGiaDinh(hoGiaDinh2)
+                .hoVaTen("Phạm Văn D")
+                .gioiTinh(GioiTinh.Nam)
+                .ngaySinh(LocalDate.of(1990, 7, 10))
+                .danToc("Kinh")
+                .tonGiao("Không")
+                .quocTich("Việt Nam")
+                .diaChi("Tòa A, Chung cư XYZ, Hà Nội")
+                .sdt("0933222111")
+                .email("phamvand@example.com")
+                .quanHe("Chủ hộ")
+                .trangThai("Đang ở")
+                .build();
 
-        NhanKhau vo2 = new NhanKhau("223344556677", hoGiaDinh2, "Lê Thị E", GioiTinh.Nữ,
-                LocalDate.of(1992, 4, 25), "Kinh", "Không", "Việt Nam",
-                "Tòa A, Chung cư XYZ, Hà Nội", "0977555444", "lethie@example.com",
-                "Vợ", "Đang ở");
+        NhanKhau vo2 = NhanKhau.builder()
+                .cccd("223344556677")
+                .hoGiaDinh(hoGiaDinh2)
+                .hoVaTen("Lê Thị E")
+                .gioiTinh(GioiTinh.Nữ)
+                .ngaySinh(LocalDate.of(1992, 4, 25))
+                .danToc("Kinh")
+                .tonGiao("Không")
+                .quocTich("Việt Nam")
+                .diaChi("Tòa A, Chung cư XYZ, Hà Nội")
+                .sdt("0977555444")
+                .email("lethie@example.com")
+                .quanHe("Vợ")
+                .trangThai("Đang ở")
+                .build();
 
         nhanKhauRepository.saveAll(Set.of(chuHo2, vo2));
         log.info("✔ Khởi tạo xong hộ gia đình tại căn hộ A102 với 2 nhân khẩu.");

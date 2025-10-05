@@ -16,14 +16,14 @@ import com.huukhanh19.quan_ly_chung_cu.mapper.NhanKhauMapper;
 import com.huukhanh19.quan_ly_chung_cu.repository.CanHoRepository;
 import com.huukhanh19.quan_ly_chung_cu.repository.HoGiaDinhRepository;
 import com.huukhanh19.quan_ly_chung_cu.repository.NhanKhauRepository;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,59 +41,151 @@ public class HoGiaDinhService {
 
     @Transactional
     public void changeChuHo(String cccdChuHoCu, ChangeChuHoRequest request) {
-        String cccdNhanKhauMoi = request.getCccdNhanKhauMoi();
+        String cccdChuHoMoi = request.getCccdNhanKhauMoi();
 
+        log.info("=== BẮT ĐẦU CHUYỂN ĐỔI CHỦ HỘ: {} -> {} ===", cccdChuHoCu, cccdChuHoMoi);
+
+        // ========== BƯỚC 1: LẤY DỮ LIỆU VÀ VALIDATE ==========
         HoGiaDinh hoGiaDinhCu = hoGiaDinhRepository.findById(cccdChuHoCu)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy hộ gia đình cũ."));
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy hộ gia đình"));
 
-        NhanKhau nhanKhauSeLamChuHo = nhanKhauRepository.findById(cccdNhanKhauMoi)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân khẩu sẽ làm chủ hộ mới."));
+        NhanKhau chuHoMoi = nhanKhauRepository.findById(cccdChuHoMoi)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân khẩu sẽ làm chủ hộ mới"));
 
-        if (!nhanKhauSeLamChuHo.getHoGiaDinh().getCccdChuHo().equals(cccdChuHoCu)) {
-            throw new RuntimeException("Nhân khẩu được chỉ định không thuộc hộ gia đình này.");
+        if (chuHoMoi.getHoGiaDinh() == null ||
+                !chuHoMoi.getHoGiaDinh().getCccdChuHo().equals(cccdChuHoCu)) {
+            throw new RuntimeException("Nhân khẩu được chỉ định không thuộc hộ gia đình này");
         }
 
-        String quanHeCuCuaChuHoMoi = nhanKhauSeLamChuHo.getQuanHe();
+        String quanHeCuCuaChuHoMoi = chuHoMoi.getQuanHe();
+        log.info("Quan hệ cũ của chủ hộ mới: {}", quanHeCuCuaChuHoMoi);
 
-        HoGiaDinh hoGiaDinhMoi = hoGiaDinhMapper.createNewHoGiaDinh(hoGiaDinhCu, nhanKhauSeLamChuHo);
-        hoGiaDinhRepository.save(hoGiaDinhMoi);
+        // Lưu thông tin cần giữ lại
+        CanHo canHo = hoGiaDinhCu.getCanHo();
+        Integer soThanhVien = hoGiaDinhCu.getSoThanhVien();
+        Integer soXeMay = hoGiaDinhCu.getSoXeMay();
+        Integer soOto = hoGiaDinhCu.getSoOto();
+        String trangThai = hoGiaDinhCu.getTrangThai();
 
-        String quanHeMoiCuaChuHoCu = xacDinhQuanHeNguoc(quanHeCuCuaChuHoMoi, nhanKhauSeLamChuHo.getGioiTinh());
+        // Lấy danh sách nhân khẩu
+        List<NhanKhau> allNhanKhau = nhanKhauRepository
+                .findAllByHoGiaDinh_CccdChuHo(cccdChuHoCu);
+        log.info("Tìm thấy {} nhân khẩu", allNhanKhau.size());
 
-        NhanKhau nhanKhauCuaChuHoCu = nhanKhauMapper.createNhanKhauFromHoGiaDinh(
-                hoGiaDinhCu,
-                hoGiaDinhMoi,
-                quanHeMoiCuaChuHoCu
+        // ========== BƯỚC 2: XÓA CÁC LIÊN KẾT ==========
+        // 2.1. Xóa liên kết NhanKhau -> HoGiaDinh
+        for (NhanKhau nk : allNhanKhau) {
+            nk.setHoGiaDinh(null);
+        }
+        nhanKhauRepository.saveAll(allNhanKhau);
+        nhanKhauRepository.flush();
+        log.info("Đã xóa liên kết NhanKhau -> HoGiaDinh");
+
+        // 2.2. Xóa liên kết HoGiaDinh -> CanHo
+        hoGiaDinhCu.setCanHo(null);
+        hoGiaDinhRepository.save(hoGiaDinhCu);
+        hoGiaDinhRepository.flush();
+        log.info("Đã xóa liên kết HoGiaDinh -> CanHo");
+
+        // ========== BƯỚC 3: TẠO HỘ GIA ĐÌNH MỚI ==========
+        HoGiaDinh hoGiaDinhMoi = HoGiaDinh.builder()
+                .cccdChuHo(cccdChuHoMoi)
+                .hoTenChuHo(chuHoMoi.getHoVaTen())
+                .gioiTinh(chuHoMoi.getGioiTinh())
+                .ngaySinh(chuHoMoi.getNgaySinh())
+                .danToc(chuHoMoi.getDanToc())
+                .tonGiao(chuHoMoi.getTonGiao())
+                .quocTich(chuHoMoi.getQuocTich())
+                .diaChi(chuHoMoi.getDiaChi())
+                .sdt(chuHoMoi.getSdt())
+                .email(chuHoMoi.getEmail())
+                .canHo(canHo)
+                .soThanhVien(soThanhVien)
+                .soXeMay(soXeMay)
+                .soOto(soOto)
+                .trangThai(trangThai)
+                .build();
+
+        HoGiaDinh savedHoGiaDinhMoi = hoGiaDinhRepository.save(hoGiaDinhMoi);
+        hoGiaDinhRepository.flush();
+        log.info("Đã tạo hộ gia đình mới: {}", savedHoGiaDinhMoi.getCccdChuHo());
+
+// ========== BƯỚC 4: TẠO NHÂN KHẨU CHO CHỦ HỘ CŨ ==========
+        String quanHeMoiCuaChuHoCu = xacDinhQuanHeNguoc(
+                quanHeCuCuaChuHoMoi,
+                chuHoMoi.getGioiTinh()
         );
 
-        nhanKhauRepository.save(nhanKhauCuaChuHoCu);
+// Tìm NhanKhau cũ để lấy ngayTao (nếu có)
+        LocalDate ngayTaoCu = allNhanKhau.stream()
+                .filter(nk -> nk.getCccd().equals(cccdChuHoCu))
+                .findFirst()
+                .map(NhanKhau::getNgayTao)
+                .orElse(LocalDate.now()); // Nếu không tìm thấy thì dùng ngày hiện tại
 
-        List<NhanKhau> allNhanKhauCu = nhanKhauRepository.findAllByHoGiaDinh_CccdChuHo(cccdChuHoCu);
-        for (NhanKhau nk : allNhanKhauCu) {
-            if (nk.getCccd().equals(cccdNhanKhauMoi)) {
-                // Nhân khẩu mới trở thành chủ hộ
+        NhanKhau nhanKhauCuaChuHoCu = NhanKhau.builder()
+                .cccd(cccdChuHoCu)
+                .hoGiaDinh(savedHoGiaDinhMoi)
+                .hoVaTen(hoGiaDinhCu.getHoTenChuHo())
+                .gioiTinh(hoGiaDinhCu.getGioiTinh())
+                .ngaySinh(hoGiaDinhCu.getNgaySinh())
+                .danToc(hoGiaDinhCu.getDanToc())
+                .tonGiao(hoGiaDinhCu.getTonGiao())
+                .quocTich(hoGiaDinhCu.getQuocTich())
+                .diaChi(hoGiaDinhCu.getDiaChi())
+                .sdt(hoGiaDinhCu.getSdt())
+                .email(hoGiaDinhCu.getEmail())
+                .quanHe(quanHeMoiCuaChuHoCu)
+                .trangThai(hoGiaDinhCu.getTrangThai())
+                .ngayTao(ngayTaoCu) // Set ngày tạo từ bản ghi cũ
+                .build();
+
+        nhanKhauRepository.save(nhanKhauCuaChuHoCu);
+        log.info("Đã tạo nhân khẩu cho chủ hộ cũ với quan hệ: {}", quanHeMoiCuaChuHoCu);
+        hoGiaDinhCu.setNhanKhaus(null);
+        canHo.setHoGiaDinh(null);
+
+        // ========== BƯỚC 5: TẠO LẠI LIÊN KẾT VÀ CẬP NHẬT QUAN HỆ ==========
+        for (NhanKhau nk : allNhanKhau) {
+            if (nk.getCccd().equals(cccdChuHoMoi)) {
+                // Chủ hộ mới
                 nk.setQuanHe("Chủ hộ");
+                nk.setHoGiaDinh(savedHoGiaDinhMoi);
+                log.info("Cập nhật {} thành Chủ hộ", nk.getHoVaTen());
+
             } else if (nk.getCccd().equals(cccdChuHoCu)) {
-                // Chủ hộ cũ đã được xử lý ở trên, giữ nguyên quan hệ mới
-                // (không cần set lại vì đã set trong nhanKhauCuaChuHoCu)
+                // Chủ hộ cũ - đã xử lý ở bước 4, skip
+                continue;
+
             } else {
-                // Cập nhật quan hệ cho các thành viên còn lại
+                // Các thành viên khác
                 String quanHeCuVoiChuHoCu = nk.getQuanHe();
                 String quanHeMoiVoiChuHoMoi = capNhatQuanHeThanhVien(
                         quanHeCuVoiChuHoCu,
                         quanHeCuCuaChuHoMoi,
                         quanHeMoiCuaChuHoCu,
                         nk.getGioiTinh(),
-                        nhanKhauSeLamChuHo.getGioiTinh()
+                        chuHoMoi.getGioiTinh()
                 );
-                nk.setQuanHe(quanHeMoiVoiChuHoMoi);
-            }
-            nk.setHoGiaDinh(hoGiaDinhMoi);
-        }
-        nhanKhauRepository.saveAll(allNhanKhauCu);
 
+                nk.setQuanHe(quanHeMoiVoiChuHoMoi);
+                nk.setHoGiaDinh(savedHoGiaDinhMoi);
+                log.info("Cập nhật quan hệ {}: {} -> {}",
+                        nk.getHoVaTen(), quanHeCuVoiChuHoCu, quanHeMoiVoiChuHoMoi);
+            }
+        }
+
+        nhanKhauRepository.saveAll(allNhanKhau);
+        log.info("Đã tạo lại liên kết cho {} nhân khẩu", allNhanKhau.size());
+
+        // ========== BƯỚC 6: XÓA HỘ CŨ ==========
         hoGiaDinhRepository.delete(hoGiaDinhCu);
+        hoGiaDinhRepository.flush();
+        log.info("Đã xóa hộ gia đình cũ");
+
+        log.info("=== HOÀN TẤT CHUYỂN ĐỔI CHỦ HỘ ===");
     }
+
 
     /**
      * Cập nhật quan hệ của thành viên với chủ hộ mới
