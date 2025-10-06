@@ -22,6 +22,8 @@ import org.springframework.web.filter.CorsFilter;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -33,10 +35,15 @@ public class SecurityConfig {
     @Value("${jwt.signerKey}")
     private String signerKey;
 
-    @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
+
+                        // THÊM CÁC QUY TẮC BỊ THIẾU Ở ĐÂY:
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 1. Cho phép tất cả yêu cầu OPTIONS (rất quan trọng cho CORS)
+                        .requestMatchers(HttpMethod.GET, "/can-ho").permitAll()     // 2. Cho phép API lấy danh sách căn hộ
+                        .requestMatchers(HttpMethod.POST, "/tam-vang").permitAll()   // 3. Cho phép API tạo tạm vắng
+
                         .anyRequest().authenticated());
 
         httpSecurity.oauth2ResourceServer(oauth2 ->
@@ -45,6 +52,7 @@ public class SecurityConfig {
                                         .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                         .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
         );
+        httpSecurity.cors(withDefaults());
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
         return httpSecurity.build();
