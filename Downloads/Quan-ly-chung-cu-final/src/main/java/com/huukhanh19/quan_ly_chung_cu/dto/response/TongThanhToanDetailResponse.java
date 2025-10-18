@@ -19,27 +19,22 @@ import java.math.BigDecimal;
 public class TongThanhToanDetailResponse {
     // Thông tin căn hộ
     Integer idCanHo;
-    Integer idThoiGianThu;
-    String soNha;
-    BigDecimal dienTich;
 
     // Chi tiết phí chung cư
+    Integer tongPhiChungCu;
     Integer phiDichVu;
     Integer phiQuanLy;
-    Integer tongPhiChungCu;
 
     // Chi tiết tiện ích
+    Integer tongTienIch;
     Integer tienDien;
     Integer tienNuoc;
     Integer tienInternet;
-    Integer tongTienIch;
 
     // Chi tiết gửi xe
-    Integer soXeMay;
-    Integer soOto;
+    Integer tongGuiXe;
     Integer tienXeMay;
     Integer tienXeOto;
-    Integer tongGuiXe;
 
     // Tổng thanh toán
     Integer tongPhi;

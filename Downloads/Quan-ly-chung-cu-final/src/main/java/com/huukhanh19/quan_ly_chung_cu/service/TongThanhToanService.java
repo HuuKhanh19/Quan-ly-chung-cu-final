@@ -87,6 +87,8 @@ public class TongThanhToanService {
 
         // 4. Trả về kết quả
         return TongThanhToanBatchResponse.builder()
+                .ngayThu(thoiGianThuPhi.getNgayThu())
+                .hanThu(thoiGianThuPhi.getHanThu())
                 .totalCanHo(danhSachCanHo.size())
                 .successCount(successCount)
                 .failCount(failCount)
@@ -126,7 +128,7 @@ public class TongThanhToanService {
         Integer tongTienIch = (tienIch != null) ? tienIch.getTongTienIch() : 0;
         Integer tongGuiXe = phiGuiXe.getTongGuiXe();
         Integer tongPhi = tongPhiChungCu + tongTienIch + tongGuiXe;
-        Integer soDu = tongPhi; // Ban đầu chưa nộp gì
+        Integer soDu = - tongPhi; // Ban đầu chưa nộp gì
 
         // 5. Tạo và lưu TongThanhToan
         TongThanhToan tongThanhToan = TongThanhToan.builder()

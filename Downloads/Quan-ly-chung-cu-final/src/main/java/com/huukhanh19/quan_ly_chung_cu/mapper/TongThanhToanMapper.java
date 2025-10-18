@@ -10,9 +10,6 @@ import org.mapstruct.Named;
 public interface TongThanhToanMapper {
 
     @Mapping(target = "idCanHo", source = "tongThanhToan.id.idCanHo")
-    @Mapping(target = "idThoiGianThu", source = "tongThanhToan.id.idThoiGianThu")
-    @Mapping(target = "soNha", source = "tongThanhToan.canHo.soNha")
-    @Mapping(target = "dienTich", source = "tongThanhToan.canHo.dienTich")
 
     // Phí chung cư
     @Mapping(target = "phiDichVu", source = "phiChungCu", qualifiedByName = "getPhiDichVu")
@@ -26,8 +23,6 @@ public interface TongThanhToanMapper {
     @Mapping(target = "tongTienIch", source = "tongThanhToan.tongTienIch")
 
     // Gửi xe
-    @Mapping(target = "soXeMay", source = "tongThanhToan", qualifiedByName = "getSoXeMay")
-    @Mapping(target = "soOto", source = "tongThanhToan", qualifiedByName = "getSoOto")
     @Mapping(target = "tienXeMay", source = "phiGuiXe", qualifiedByName = "getTienXeMay")
     @Mapping(target = "tienXeOto", source = "phiGuiXe", qualifiedByName = "getTienXeOto")
     @Mapping(target = "tongGuiXe", source = "tongThanhToan.tongGuiXe")
