@@ -13,7 +13,7 @@ import java.util.Set;
 @Builder
 public class ThoiGianThuPhi {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Integer id;
 
     @Column(name = "ngay_thu", nullable = false)
@@ -21,8 +21,4 @@ public class ThoiGianThuPhi {
 
     @Column(name = "han_thu", nullable = false)
     private LocalDate hanThu;
-
-    // Phía 'ThoiGianThuPhi' là phía "bị sở hữu", dùng mappedBy
-    @OneToOne(mappedBy = "thoiGianThuPhi", cascade = CascadeType.ALL, orphanRemoval = true)
-    private GiaTienIch giaTienIch;
 }

@@ -29,13 +29,14 @@ public class TienIch {
     @JoinColumn(name = "id_thoi_gian_thu")
     ThoiGianThuPhi thoiGianThuPhi;
 
-    @Column(name = "so_dien")
-    Integer soDien;
+    @Column(name = "tien_dien")
+    Integer tienDien;
 
-    @Column(name = "so_nuoc")
-    Integer soNuoc;
+    @Column(name = "tien_nuoc")
+    Integer tienNuoc;
 
-    Integer internet;
+    @Column(name = "tien_internet")
+    Integer tienInternet;
 
     @Column(name = "tong_tien_ich")
     Integer tongTienIch;
