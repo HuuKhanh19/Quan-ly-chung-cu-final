@@ -1,14 +1,10 @@
 package com.huukhanh19.quan_ly_chung_cu.service;
 
-import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauCreationRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.TienIchCreationRequest;
-import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.TienIchResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.*;
 import com.huukhanh19.quan_ly_chung_cu.mapper.TienIchMapper;
-import com.huukhanh19.quan_ly_chung_cu.repository.CanHoRepository;
-import com.huukhanh19.quan_ly_chung_cu.repository.ThoiGianThuPhiRepository;
-import com.huukhanh19.quan_ly_chung_cu.repository.TienIchRepository;
+import com.huukhanh19.quan_ly_chung_cu.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,15 +13,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
-
 @PreAuthorize("hasRole('KETOAN')")
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
-public class PhiService {
+public class TienIchService {
     TienIchRepository tienIchRepository;
     CanHoRepository canHoRepository;
     ThoiGianThuPhiRepository thoiGianThuPhiRepository;
@@ -33,9 +26,20 @@ public class PhiService {
 
     @Transactional
     public TienIchResponse createTienIch(TienIchCreationRequest request) {
+        log.info("Creating TienIch for canHo: {}, thoiGianThu: {}",
+                request.getIdCanHo(), request.getIdThoiGianThu());
+
         // Kiểm tra căn hộ có tồn tại không
         CanHo canHo = canHoRepository.findById(request.getIdCanHo())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy căn hộ với ID: " + request.getIdCanHo()));
+
+        // Kiểm tra căn hộ có hộ gia đình (có người ở) không
+        if (canHo.getHoGiaDinh() == null) {
+            log.warn("CanHo {} does not have HoGiaDinh", request.getIdCanHo());
+            throw new RuntimeException("Không thể tạo tiện ích cho căn hộ chưa có người ở");
+        }
+
+        log.info("CanHo {} has HoGiaDinh, proceeding to create TienIch", request.getIdCanHo());
 
         // Kiểm tra thời gian thu phí có tồn tại không
         ThoiGianThuPhi thoiGianThuPhi = thoiGianThuPhiRepository.findById(request.getIdThoiGianThu())
@@ -58,6 +62,9 @@ public class PhiService {
         TienIch tienIch = tienIchMapper.toEntity(request, monthlyFeeId, canHo, thoiGianThuPhi, tongTienIch);
 
         tienIchRepository.save(tienIch);
+
+        log.info("Created TienIch successfully for canHo: {} with tongTienIch: {}",
+                request.getIdCanHo(), tongTienIch);
 
         // Sử dụng mapper để tạo response
         return tienIchMapper.toResponse(tienIch);
