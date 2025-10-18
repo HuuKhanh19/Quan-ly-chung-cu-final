@@ -1,10 +1,12 @@
 package com.huukhanh19.quan_ly_chung_cu.entity;
 
+import com.huukhanh19.quan_ly_chung_cu.enums.TrangThaiDongGop;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -13,39 +15,37 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
+@Table(name = "khoan_dong_gop")
 public class KhoanDongGop {
-    @EmbeddedId
-    private KhoanDongGopId id;
 
-    @ManyToOne
-    @MapsId("cccdChuHo") // Ánh xạ tới thuộc tính cccdChuHo trong KhoanDongGopId
-    @JoinColumn(name = "cccd_chu_ho")
-    HoGiaDinh hoGiaDinh;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_khoan_dong_gop")
+    Integer idKhoanDongGop;
 
-    @Column(name = "quy_vnn")
-    Integer quyVnn = 0;
+    @Column(name = "ten_khoan_dong_gop", nullable = false)
+    String tenKhoanDongGop;
 
-    @Column(name = "quy_vbd")
-    Integer quyVbd = 0;
+    @Column(name = "ngay_tao", nullable = false)
+    LocalDate ngayTao;
 
-    @Column(name = "quy_tdp")
-    Integer quyTdp = 0;
+    @Column(name = "ngay_bat_dau_thu", nullable = false)
+    LocalDate ngayBatDauThu;
 
-    @Column(name = "quy_vtt")
-    Integer quyVtt = 0;
+    @Column(name = "han_dong_gop", nullable = false)
+    LocalDate hanDongGop;
 
-    @Column(name = "quy_vndtt")
-    Integer quyVndtt = 0;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "trang_thai")
+    TrangThaiDongGop trangThai;
 
-    @Column(name = "quy_tn")
-    Integer quyTn = 0;
+    @Column(name = "tong_tien_thu_duoc")
+    Integer tongTienThuDuoc = 0;
 
-    @Column(name = "quy_kh")
-    Integer quyKh = 0;
+    @Column(name = "so_can_ho_dong_gop")
+    Integer soCanHoDongGop = 0;
 
-    @Column(name = "quy_nct")
-    Integer quyNct = 0;
-
-    @Column(name = "tong_thu")
-    Integer tongThu;
+    // Quan hệ One-to-Many với ChiTietDongGop
+    @OneToMany(mappedBy = "khoanDongGop", cascade = CascadeType.ALL, orphanRemoval = true)
+    Set<ChiTietDongGop> danhSachChiTiet;
 }

@@ -56,4 +56,8 @@ public class CanHo {
     @OneToMany(mappedBy = "canHo", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference("canho-tongthanhtoan")
     private Set<TongThanhToan> danhSachTongThanhToan;
+
+    @OneToMany(mappedBy = "canHo", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("canho-chitietdonggop")
+    Set<ChiTietDongGop> danhSachDongGop;
 }
