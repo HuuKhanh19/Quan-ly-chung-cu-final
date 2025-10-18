@@ -1,5 +1,6 @@
 package com.huukhanh19.quan_ly_chung_cu.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.huukhanh19.quan_ly_chung_cu.enums.GioiTinh;
 import jakarta.persistence.*;
 import lombok.*;
@@ -64,5 +65,6 @@ public class HoGiaDinh {
 
     // Một hộ gia đình có nhiều nhân khẩu
     @OneToMany(mappedBy = "hoGiaDinh")
+    @JsonBackReference("canho-hogiadinh")
     Set<NhanKhau> nhanKhaus;
 }

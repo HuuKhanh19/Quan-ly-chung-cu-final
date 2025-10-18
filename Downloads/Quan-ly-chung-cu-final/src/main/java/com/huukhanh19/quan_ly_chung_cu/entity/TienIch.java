@@ -1,5 +1,6 @@
 package com.huukhanh19.quan_ly_chung_cu.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -20,7 +21,13 @@ public class TienIch {
     @MapsId("idCanHo")
     @ManyToOne
     @JoinColumn(name = "id_can_ho")
+    @JsonBackReference("canho-tienich")
     CanHo canHo;
+
+    @MapsId("idThoiGianThu")
+    @ManyToOne
+    @JoinColumn(name = "id_thoi_gian_thu")
+    ThoiGianThuPhi thoiGianThuPhi;
 
     @Column(name = "so_dien")
     Integer soDien;
@@ -32,7 +39,4 @@ public class TienIch {
 
     @Column(name = "tong_tien_ich")
     Integer tongTienIch;
-
-    @Column(name = "thoi_gian_thu")
-    LocalDate thoiGianThu;
 }

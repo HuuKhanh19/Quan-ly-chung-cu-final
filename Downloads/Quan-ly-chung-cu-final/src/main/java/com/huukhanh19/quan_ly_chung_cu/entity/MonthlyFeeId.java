@@ -17,8 +17,8 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MonthlyFeeId implements Serializable {
     @Column(name = "id_can_ho")
-    Integer idCanHo;
+    private Integer idCanHo;
 
-    @Column(name = "han_thu")
-    LocalDate hanThu;
+    @Column(name = "id_thoi_gian_thu")
+    private Integer idThoiGianThu;
 }

@@ -1,5 +1,6 @@
 package com.huukhanh19.quan_ly_chung_cu.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -20,7 +21,13 @@ public class PhiChungCu {
     @MapsId("idCanHo") // Ánh xạ tới thuộc tính idCanHo trong MonthlyFeeId
     @ManyToOne
     @JoinColumn(name = "id_can_ho")
+    @JsonBackReference("canho-phichungcu")
     CanHo canHo;
+
+    @MapsId("idThoiGianThu")
+    @ManyToOne
+    @JoinColumn(name = "id_thoi_gian_thu")
+    private ThoiGianThuPhi thoiGianThuPhi;
 
     @Column(name = "phi_dich_vu")
     Integer phiDichVu;
@@ -30,7 +37,4 @@ public class PhiChungCu {
 
     @Column(name = "tong_phi_chung_cu")
     Integer tongPhiChungCu;
-
-    @Column(name = "thoi_gian_thu")
-    LocalDate thoiGianThu;
 }
