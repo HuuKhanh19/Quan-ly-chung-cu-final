@@ -15,10 +15,10 @@ import java.time.LocalDate;
 @Entity
 public class PhiChungCu {
     @EmbeddedId
-    private PhiChungCuId id;
+    MonthlyFeeId id;
 
+    @MapsId("idCanHo") // Ánh xạ tới thuộc tính idCanHo trong MonthlyFeeId
     @ManyToOne
-    @MapsId("idCanHo") // Ánh xạ tới thuộc tính idCanHo trong PhiChungCuId
     @JoinColumn(name = "id_can_ho")
     CanHo canHo;
 

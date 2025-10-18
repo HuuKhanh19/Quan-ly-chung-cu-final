@@ -15,10 +15,10 @@ import java.time.LocalDate;
 @Entity
 public class TienIch {
     @EmbeddedId
-    private TienIchId id;
+    MonthlyFeeId id;
 
-    @ManyToOne
     @MapsId("idCanHo")
+    @ManyToOne
     @JoinColumn(name = "id_can_ho")
     CanHo canHo;
 
@@ -32,4 +32,7 @@ public class TienIch {
 
     @Column(name = "tong_tien_ich")
     Integer tongTienIch;
+
+    @Column(name = "thoi_gian_thu")
+    LocalDate thoiGianThu;
 }

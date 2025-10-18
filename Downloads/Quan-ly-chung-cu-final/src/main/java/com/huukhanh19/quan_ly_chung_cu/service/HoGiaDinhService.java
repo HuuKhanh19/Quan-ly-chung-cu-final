@@ -556,6 +556,7 @@ public class HoGiaDinhService {
         return normalized;
     }
 
+    @PreAuthorize("hasAnyRole('QUANLY', 'KETOAN')")
     @Transactional(readOnly = true)
     public List<HoGiaDinhResponse> getAllHoGiaDinh() {
         log.info("Lấy tất cả hộ gia đình");

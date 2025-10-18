@@ -15,10 +15,10 @@ import java.time.LocalDate;
 @Entity
 public class TongThanhToan {
     @EmbeddedId
-    TongThanhToanId id;
+    MonthlyFeeId id;
 
-    @ManyToOne
     @MapsId("idCanHo")
+    @ManyToOne
     @JoinColumn(name = "id_can_ho")
     CanHo canHo;
 
