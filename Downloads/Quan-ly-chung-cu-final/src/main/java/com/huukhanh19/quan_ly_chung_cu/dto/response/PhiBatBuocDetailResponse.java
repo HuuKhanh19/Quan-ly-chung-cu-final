@@ -8,30 +8,27 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TongThanhToanDetailResponse {
-    // Thông tin căn hộ
+public class PhiBatBuocDetailResponse {
     Integer idCanHo;
 
-    // Chi tiết phí chung cư
+    // Phí chung cư
     Integer tongPhiChungCu;
     Integer phiDichVu;
     Integer phiQuanLy;
 
-    // Chi tiết tiện ích
+    // Tiện ích
     Integer tongTienIch;
     Integer tienDien;
     Integer tienNuoc;
     Integer tienInternet;
 
-    // Chi tiết gửi xe
+    // Gửi xe
     Integer tongGuiXe;
     Integer tienXeMay;
     Integer tienXeOto;

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -16,9 +17,15 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TongThanhToanBatchResponse {
+public class PhiBatBuocResponse {
+    LocalDate ngayThu;
+    LocalDate hanThu;
     Integer totalCanHo;
     Integer successCount;
     Integer failCount;
-    List<TongThanhToanResponse> danhSachTongThanhToan;
+    Integer tongPhiAll;
+    Integer tongPhiChungCuAll;
+    Integer tongTienIchAll;
+    Integer tongGuiXeAll;
+    List<PhiBatBuocDetailResponse> danhSachTongThanhToan;
 }

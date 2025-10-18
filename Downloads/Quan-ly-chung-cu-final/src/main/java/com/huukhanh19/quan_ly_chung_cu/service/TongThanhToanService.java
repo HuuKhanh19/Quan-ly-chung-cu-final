@@ -1,9 +1,12 @@
 package com.huukhanh19.quan_ly_chung_cu.service;
 
 import com.huukhanh19.quan_ly_chung_cu.dto.request.TongThanhToanCreationRequest;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.PhiBatBuocDetailResponse;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.PhiBatBuocResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.TongThanhToanBatchResponse;
-import com.huukhanh19.quan_ly_chung_cu.dto.response.TongThanhToanDetailResponse;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.TongThanhToanResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.*;
+import com.huukhanh19.quan_ly_chung_cu.mapper.PhiBatBuocMapper;
 import com.huukhanh19.quan_ly_chung_cu.mapper.TongThanhToanMapper;
 import com.huukhanh19.quan_ly_chung_cu.repository.*;
 import jakarta.transaction.Transactional;
@@ -31,6 +34,7 @@ public class TongThanhToanService {
     CanHoRepository canHoRepository;
     ThoiGianThuPhiRepository thoiGianThuPhiRepository;
     TongThanhToanMapper tongThanhToanMapper;
+    PhiBatBuocMapper phiBatBuocMapper;
 
     @Transactional
     public TongThanhToanBatchResponse createTongThanhToanForAllCanHo(TongThanhToanCreationRequest request) {
@@ -45,36 +49,29 @@ public class TongThanhToanService {
 
         if (danhSachCanHo.isEmpty()) {
             log.warn("Không có căn hộ nào có người ở");
-            return createEmptyResponse();
+            return TongThanhToanBatchResponse.builder()
+                    .totalCanHo(0)
+                    .successCount(0)
+                    .failCount(0)
+                    .danhSachTongThanhToan(new ArrayList<>())
+                    .build();
         }
 
         log.info("Found {} căn hộ có người ở", danhSachCanHo.size());
 
         // 3. Tạo tổng thanh toán cho từng căn hộ
-        List<TongThanhToanDetailResponse> danhSachResponse = new ArrayList<>();
+        List<TongThanhToanResponse> danhSachResponse = new ArrayList<>();
         int successCount = 0;
         int failCount = 0;
-        int tongPhiChungCuAll = 0;
-        int tongTienIchAll = 0;
-        int tongGuiXeAll = 0;
-        int tongPhiAll = 0;
 
         for (CanHo canHo : danhSachCanHo) {
             try {
-                TongThanhToanDetailResponse response = createTongThanhToanForCanHo(
-                        canHo, thoiGianThuPhi, request.getIdThoiGianThu());
-
+                TongThanhToan tongThanhToan = createTongThanhToanForCanHo(canHo, thoiGianThuPhi, request.getIdThoiGianThu());
+                TongThanhToanResponse response = tongThanhToanMapper.toResponse(tongThanhToan);
                 danhSachResponse.add(response);
                 successCount++;
-
-                // Tính tổng
-                tongPhiChungCuAll += response.getTongPhiChungCu();
-                tongTienIchAll += response.getTongTienIch();
-                tongGuiXeAll += response.getTongGuiXe();
-                tongPhiAll += response.getTongPhi();
-
                 log.info("Created TongThanhToan for canHo: {} - {} with tongPhi: {}",
-                        canHo.getIdCanHo(), canHo.getSoNha(), response.getTongPhi());
+                        canHo.getIdCanHo(), canHo.getSoNha(), tongThanhToan.getTongPhi());
             } catch (Exception e) {
                 failCount++;
                 log.error("Failed to create TongThanhToan for canHo: {} - Error: {}",
@@ -82,27 +79,95 @@ public class TongThanhToanService {
             }
         }
 
-        log.info("Batch create completed. Success: {}, Fail: {}, TongPhiAll: {}",
-                successCount, failCount, tongPhiAll);
+        log.info("Batch create completed. Success: {}, Fail: {}", successCount, failCount);
 
         // 4. Trả về kết quả
         return TongThanhToanBatchResponse.builder()
-                .ngayThu(thoiGianThuPhi.getNgayThu())
-                .hanThu(thoiGianThuPhi.getHanThu())
                 .totalCanHo(danhSachCanHo.size())
                 .successCount(successCount)
                 .failCount(failCount)
-                .tongPhiChungCuAll(tongPhiChungCuAll)
-                .tongTienIchAll(tongTienIchAll)
-                .tongGuiXeAll(tongGuiXeAll)
-                .tongPhiAll(tongPhiAll)
                 .danhSachTongThanhToan(danhSachResponse)
                 .build();
     }
 
-    private TongThanhToanDetailResponse createTongThanhToanForCanHo(CanHo canHo,
-                                                                    ThoiGianThuPhi thoiGianThuPhi,
-                                                                    Integer idThoiGianThu) {
+    public PhiBatBuocResponse getPhiBatBuocByThoiGianThu(Integer idThoiGianThu) {
+        log.info("Getting PhiBatBuoc for thoiGianThu: {}", idThoiGianThu);
+
+        // 1. Validate và lấy thời gian thu phí
+        ThoiGianThuPhi thoiGianThuPhi = thoiGianThuPhiRepository.findById(idThoiGianThu)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy thời gian thu phí với ID: " + idThoiGianThu));
+
+        // 2. Lấy tất cả TongThanhToan theo idThoiGianThu
+        List<TongThanhToan> danhSachTongThanhToan = tongThanhToanRepository.findByIdThoiGianThu(idThoiGianThu);
+
+        if (danhSachTongThanhToan.isEmpty()) {
+            log.warn("Không tìm thấy dữ liệu tổng thanh toán cho kỳ thu phí này");
+            return createEmptyPhiBatBuocResponse(thoiGianThuPhi);
+        }
+
+        log.info("Found {} records TongThanhToan", danhSachTongThanhToan.size());
+
+        // 3. Xử lý từng record và tính tổng
+        List<PhiBatBuocDetailResponse> danhSachDetail = new ArrayList<>();
+        int successCount = 0;
+        int failCount = 0;
+        int tongPhiAll = 0;
+        int tongPhiChungCuAll = 0;
+        int tongTienIchAll = 0;
+        int tongGuiXeAll = 0;
+
+        for (TongThanhToan tongThanhToan : danhSachTongThanhToan) {
+            try {
+                // Lấy các khoản phí chi tiết
+                MonthlyFeeId monthlyFeeId = tongThanhToan.getId();
+
+                PhiChungCu phiChungCu = phiChungCuRepository.findById(monthlyFeeId).orElse(null);
+                TienIch tienIch = tienIchRepository.findById(monthlyFeeId).orElse(null);
+                PhiGuiXe phiGuiXe = phiGuiXeRepository.findById(monthlyFeeId).orElse(null);
+
+                // Map sang response
+                PhiBatBuocDetailResponse detail = phiBatBuocMapper.toDetailResponse(
+                        tongThanhToan, phiChungCu, tienIch, phiGuiXe);
+
+                danhSachDetail.add(detail);
+                successCount++;
+
+                // Tính tổng
+                tongPhiAll += detail.getTongPhi();
+                tongPhiChungCuAll += detail.getTongPhiChungCu();
+                tongTienIchAll += detail.getTongTienIch();
+                tongGuiXeAll += detail.getTongGuiXe();
+
+                log.debug("Processed canHo: {} with tongPhi: {}",
+                        detail.getIdCanHo(), detail.getTongPhi());
+            } catch (Exception e) {
+                failCount++;
+                log.error("Failed to process TongThanhToan for canHo: {} - Error: {}",
+                        tongThanhToan.getId().getIdCanHo(), e.getMessage());
+            }
+        }
+
+        log.info("Processing completed. Success: {}, Fail: {}, TongPhiAll: {}",
+                successCount, failCount, tongPhiAll);
+
+        // 4. Trả về kết quả
+        return PhiBatBuocResponse.builder()
+                .ngayThu(thoiGianThuPhi.getNgayThu())
+                .hanThu(thoiGianThuPhi.getHanThu())
+                .totalCanHo(danhSachTongThanhToan.size())
+                .successCount(successCount)
+                .failCount(failCount)
+                .tongPhiAll(tongPhiAll)
+                .tongPhiChungCuAll(tongPhiChungCuAll)
+                .tongTienIchAll(tongTienIchAll)
+                .tongGuiXeAll(tongGuiXeAll)
+                .danhSachTongThanhToan(danhSachDetail)
+                .build();
+    }
+
+    private TongThanhToan createTongThanhToanForCanHo(CanHo canHo,
+                                                      ThoiGianThuPhi thoiGianThuPhi,
+                                                      Integer idThoiGianThu) {
         // 1. Tạo composite key
         MonthlyFeeId monthlyFeeId = new MonthlyFeeId();
         monthlyFeeId.setIdCanHo(canHo.getIdCanHo());
@@ -144,21 +209,20 @@ public class TongThanhToanService {
                 .trangThai("Chưa thanh toán")
                 .build();
 
-        tongThanhToanRepository.save(tongThanhToan);
-
-        // 6. Map sang response
-        return tongThanhToanMapper.toDetailResponse(tongThanhToan, phiChungCu, tienIch, phiGuiXe);
+        return tongThanhToanRepository.save(tongThanhToan);
     }
 
-    private TongThanhToanBatchResponse createEmptyResponse() {
-        return TongThanhToanBatchResponse.builder()
+    private PhiBatBuocResponse createEmptyPhiBatBuocResponse(ThoiGianThuPhi thoiGianThuPhi) {
+        return PhiBatBuocResponse.builder()
+                .ngayThu(thoiGianThuPhi.getNgayThu())
+                .hanThu(thoiGianThuPhi.getHanThu())
                 .totalCanHo(0)
                 .successCount(0)
                 .failCount(0)
+                .tongPhiAll(0)
                 .tongPhiChungCuAll(0)
                 .tongTienIchAll(0)
                 .tongGuiXeAll(0)
-                .tongPhiAll(0)
                 .danhSachTongThanhToan(new ArrayList<>())
                 .build();
     }

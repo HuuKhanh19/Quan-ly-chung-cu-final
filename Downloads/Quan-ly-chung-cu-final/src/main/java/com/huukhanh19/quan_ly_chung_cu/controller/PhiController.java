@@ -14,10 +14,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/phi")
@@ -59,6 +56,13 @@ public class PhiController {
             @RequestBody @Valid TongThanhToanCreationRequest request) {
         return ApiResponse.<TongThanhToanBatchResponse>builder()
                 .result(tongThanhToanService.createTongThanhToanForAllCanHo(request))
+                .build();
+    }
+
+    @GetMapping("/phi-bat-buoc/{idThoiGianThu}")
+    public ApiResponse<PhiBatBuocResponse> getPhiBatBuoc(@PathVariable Integer idThoiGianThu) {
+        return ApiResponse.<PhiBatBuocResponse>builder()
+                .result(tongThanhToanService.getPhiBatBuocByThoiGianThu(idThoiGianThu))
                 .build();
     }
 }

@@ -8,17 +8,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class TongThanhToanBatchResponse {
-    Integer totalCanHo;
-    Integer successCount;
-    Integer failCount;
-    List<TongThanhToanResponse> danhSachTongThanhToan;
+public class TongThanhToanResponse {
+    Integer idCanHo;
+    Integer idThoiGianThu;
+    String soNha;
+    Integer tongPhiChungCu;
+    Integer tongTienIch;
+    Integer tongGuiXe;
+    Integer tongPhi;
+    Integer soTienDaNop;
+    Integer soDu;
+    String trangThai;
 }
