@@ -1,7 +1,9 @@
 package com.huukhanh19.quan_ly_chung_cu.controller;
 
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ApiResponse;
+import com.huukhanh19.quan_ly_chung_cu.dto.response.LichSuThanhToanCanHoResponse;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.ThongKeThuPhiResponse;
+import com.huukhanh19.quan_ly_chung_cu.service.LichSuThanhToanService;
 import com.huukhanh19.quan_ly_chung_cu.service.ThongKeThuPhiService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +22,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class ThongKeThuPhiController {
 
     ThongKeThuPhiService thongKeService;
+    LichSuThanhToanService lichSuThanhToanService;
 
     @GetMapping("/{idThoiGianThu}")
     public ApiResponse<ThongKeThuPhiResponse> thongKeThuPhi(@PathVariable Integer idThoiGianThu) {
         return ApiResponse.<ThongKeThuPhiResponse>builder()
                 .result(thongKeService.thongKeThuPhiByThoiGianThu(idThoiGianThu))
+                .build();
+    }
+
+    @GetMapping("/can-ho/{idCanHo}")
+    public ApiResponse<LichSuThanhToanCanHoResponse> getLichSuThanhToanCanHo(@PathVariable Integer idCanHo) {
+        return ApiResponse.<LichSuThanhToanCanHoResponse>builder()
+                .result(lichSuThanhToanService.getLichSuThanhToanCanHo(idCanHo))
                 .build();
     }
 }
