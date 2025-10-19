@@ -1,14 +1,8 @@
 package com.huukhanh19.quan_ly_chung_cu.controller;
 
-import com.huukhanh19.quan_ly_chung_cu.dto.request.PhiChungCuCreationRequest;
-import com.huukhanh19.quan_ly_chung_cu.dto.request.PhiGuiXeCreationRequest;
-import com.huukhanh19.quan_ly_chung_cu.dto.request.TienIchCreationRequest;
-import com.huukhanh19.quan_ly_chung_cu.dto.request.TongThanhToanCreationRequest;
+import com.huukhanh19.quan_ly_chung_cu.dto.request.*;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.*;
-import com.huukhanh19.quan_ly_chung_cu.service.PhiChungCuService;
-import com.huukhanh19.quan_ly_chung_cu.service.PhiGuiXeService;
-import com.huukhanh19.quan_ly_chung_cu.service.TienIchService;
-import com.huukhanh19.quan_ly_chung_cu.service.TongThanhToanService;
+import com.huukhanh19.quan_ly_chung_cu.service.*;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +20,7 @@ public class PhiController {
     PhiChungCuService phiChungCuService;
     PhiGuiXeService phiGuiXeService;
     TongThanhToanService tongThanhToanService;
+    CapNhatThanhToanService capNhatThanhToanService;
 
     // Trong file PhiController.java
     @PostMapping("/tien-ich")
@@ -63,6 +58,15 @@ public class PhiController {
     public ApiResponse<PhiBatBuocResponse> getPhiBatBuoc(@PathVariable Integer idThoiGianThu) {
         return ApiResponse.<PhiBatBuocResponse>builder()
                 .result(tongThanhToanService.getPhiBatBuocByThoiGianThu(idThoiGianThu))
+                .build();
+    }
+
+    @PostMapping("/thanh-toan/{idThoiGianThu}")
+    public ApiResponse<PhiBatBuocResponse> capNhatThanhToan(
+            @PathVariable Integer idThoiGianThu,
+            @RequestBody @Valid CapNhatThanhToanRequest request) {
+        return ApiResponse.<PhiBatBuocResponse>builder()
+                .result(capNhatThanhToanService.capNhatThanhToan(idThoiGianThu, request))
                 .build();
     }
 }
