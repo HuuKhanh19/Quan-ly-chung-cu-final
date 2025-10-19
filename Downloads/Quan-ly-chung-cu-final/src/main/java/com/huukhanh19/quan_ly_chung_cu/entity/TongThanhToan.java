@@ -1,6 +1,8 @@
 package com.huukhanh19.quan_ly_chung_cu.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.huukhanh19.quan_ly_chung_cu.enums.GioiTinh;
+import com.huukhanh19.quan_ly_chung_cu.enums.TrangThaiThanhToan;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -47,6 +49,7 @@ public class TongThanhToan {
     @Column(name = "so_du")
     Integer soDu = 0;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "trang_thai")
-    String trangThai;
+    TrangThaiThanhToan trangThai;
 }

@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.huukhanh19.quan_ly_chung_cu.enums.TrangThaiThanhToan.CHUA_THANH_TOAN;
+
 @PreAuthorize("hasRole('KETOAN')")
 @Service
 @RequiredArgsConstructor
@@ -206,7 +208,7 @@ public class TongThanhToanService {
                 .tongPhi(tongPhi)
                 .soTienDaNop(0)
                 .soDu(soDu)
-                .trangThai("Chưa thanh toán")
+                .trangThai(CHUA_THANH_TOAN)
                 .build();
 
         return tongThanhToanRepository.save(tongThanhToan);

@@ -1,5 +1,6 @@
 package com.huukhanh19.quan_ly_chung_cu.dto.response;
 
+import com.huukhanh19.quan_ly_chung_cu.enums.TrangThaiThanhToan;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,5 +25,5 @@ public class TongThanhToanResponse {
     Integer tongPhi;
     Integer soTienDaNop;
     Integer soDu;
-    String trangThai;
+    TrangThaiThanhToan trangThai;
 }
