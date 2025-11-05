@@ -5,6 +5,7 @@ import com.huukhanh19.quan_ly_chung_cu.dto.request.TamVangRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.TamVangResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.BangTamVang;
 import com.huukhanh19.quan_ly_chung_cu.entity.CanHo;
+import com.huukhanh19.quan_ly_chung_cu.enums.LoaiBienDong;
 import com.huukhanh19.quan_ly_chung_cu.entity.NhanKhau;
 import com.huukhanh19.quan_ly_chung_cu.enums.LoaiDangKy;
 import com.huukhanh19.quan_ly_chung_cu.mapper.BangTamVangMapper;
@@ -29,10 +30,13 @@ public class TamVangService {
     NhanKhauRepository nhanKhauRepository;
     CanHoRepository canHoRepository;
     BangTamVangMapper bangTamVangMapper;
+    BienDongCuDanService bienDongCuDanService;
 
     // Logic cho Tạm vắng (dành cho cư dân đã tồn tại)
     @Transactional
     public TamVangResponse createTamVang(TamVangRequest request) {
+        log.info("Creating tam vang for CCCD: {}", request.getCccd());
+
         // VALIDATE: Kiểm tra CCCD phải có trong NhanKhau
         NhanKhau nhanKhau = nhanKhauRepository.findById(request.getCccd())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân khẩu với CCCD này."));
@@ -54,12 +58,29 @@ public class TamVangService {
         tamVang.setTrangThai("Thành Công");
 
         BangTamVang saved = bangTamVangRepository.save(tamVang);
+
+        log.info("Created tam vang successfully for {}", nhanKhau.getHoVaTen());
+
+        // Ghi nhận biến động cư dân (SAU KHI save thành công)
+        Integer idCanHo = nhanKhau.getHoGiaDinh().getCanHo().getIdCanHo();
+        bienDongCuDanService.ghiNhanBienDong(
+                LoaiBienDong.TAM_VANG,
+                idCanHo,
+                nhanKhau.getCccd(),
+                nhanKhau.getHoVaTen(),
+                request.getLyDo()
+        );
+
+        log.info("Recorded bien dong: TAM_VANG for {}", nhanKhau.getHoVaTen());
+
         return bangTamVangMapper.toTamVangResponse(saved);
     }
 
     // Logic cho Tạm trú (dành cho người ngoài)
     @Transactional
     public TamVangResponse createTamTru(TamTruRequest request) {
+        log.info("Creating tam tru for CCCD: {}", request.getCccd());
+
         // VALIDATE: Kiểm tra CCCD không được có trong NhanKhau (phải là người ngoài)
         if (nhanKhauRepository.existsById(request.getCccd())) {
             throw new RuntimeException("Người này đã là nhân khẩu của chung cư, không thể đăng ký tạm trú.");
@@ -80,7 +101,20 @@ public class TamVangService {
         tamTru.setTrangThai("Thành công");
 
         BangTamVang saved = bangTamVangRepository.save(tamTru);
+
+        log.info("Created tam tru successfully for {}", request.getHoVaTen());
+
+        // Ghi nhận biến động cư dân (SAU KHI save thành công)
+        bienDongCuDanService.ghiNhanBienDong(
+                LoaiBienDong.TAM_TRU,
+                request.getIdCanHo(),
+                request.getCccd(),
+                request.getHoVaTen(),
+                request.getLyDo()
+        );
+
+        log.info("Recorded bien dong: TAM_TRU for {}", request.getHoVaTen());
+
         return bangTamVangMapper.toTamVangResponse(saved);
     }
-
 }

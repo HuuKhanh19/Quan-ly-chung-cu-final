@@ -42,6 +42,15 @@ public class NhanKhauController {
                 .build();
     }
 
+    @DeleteMapping("/{cccd}")
+    public ApiResponse<String> deleteNhanKhau(@PathVariable String cccd) {
+        log.info("DELETE /nhan-khau/{}", cccd);
+        nhanKhauService.deleteNhanKhau(cccd);
+        return ApiResponse.<String>builder()
+                .result("Xóa nhân khẩu thành công")
+                .build();
+    }
+
     @GetMapping
     public ApiResponse<List<NhanKhauResponse>> getAllNhanKhau() {
         log.info("GET /nhan-khau");
@@ -59,8 +68,6 @@ public class NhanKhauController {
                 .build();
     }
 
-    // Trong file NhanKhauController.java
-
     @PostMapping("/search")
     public ApiResponse<List<NhanKhauResponse>> searchNhanKhau(@RequestBody NhanKhauSearchRequest request) {
         return ApiResponse.<List<NhanKhauResponse>>builder()
@@ -74,5 +81,4 @@ public class NhanKhauController {
                 .result(nhanKhauService.getHistory(cccd))
                 .build();
     }
-
 }

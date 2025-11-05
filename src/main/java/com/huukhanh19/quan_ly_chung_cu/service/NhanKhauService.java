@@ -6,6 +6,7 @@ import com.huukhanh19.quan_ly_chung_cu.dto.request.NhanKhauUpdateRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.NhanKhauResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.HoGiaDinh;
 import com.huukhanh19.quan_ly_chung_cu.entity.LichSuThayDoi;
+import com.huukhanh19.quan_ly_chung_cu.enums.LoaiBienDong;
 import com.huukhanh19.quan_ly_chung_cu.entity.NhanKhau;
 import com.huukhanh19.quan_ly_chung_cu.mapper.NhanKhauMapper;
 import com.huukhanh19.quan_ly_chung_cu.repository.HoGiaDinhRepository;
@@ -38,9 +39,12 @@ public class NhanKhauService {
     HoGiaDinhRepository hoGiaDinhRepository;
     NhanKhauMapper nhanKhauMapper;
     LichSuThayDoiRepository lichSuThayDoiRepository;
+    BienDongCuDanService bienDongCuDanService;
 
     @Transactional
     public NhanKhauResponse createNhanKhau(NhanKhauCreationRequest request) {
+        log.info("Creating nhan khau with CCCD: {}", request.getCccd());
+
         if (nhanKhauRepository.existsById(request.getCccd())) {
             throw new RuntimeException("Nhân khẩu với CCCD này đã tồn tại.");
         }
@@ -58,16 +62,34 @@ public class NhanKhauService {
 
         ghiLaiLichSu(savedNhanKhau.getCccd(), "Tạo mới nhân khẩu.");
 
+        // Ghi nhận biến động cư dân (SAU KHI save thành công)
+        Integer idCanHo = hoGiaDinh.getCanHo() != null ? hoGiaDinh.getCanHo().getIdCanHo() : null;
+        if (idCanHo != null) {
+            bienDongCuDanService.ghiNhanBienDong(
+                    LoaiBienDong.THEM_NHAN_KHAU,
+                    idCanHo,
+                    savedNhanKhau.getCccd(),
+                    savedNhanKhau.getHoVaTen(),
+                    null
+            );
+            log.info("Recorded bien dong: THEM_NHAN_KHAU for {}", savedNhanKhau.getHoVaTen());
+        }
+
         return nhanKhauMapper.toNhanKhauResponse(savedNhanKhau);
     }
 
     @Transactional
     public NhanKhauResponse updateNhanKhau(String cccd, NhanKhauUpdateRequest request) {
+        log.info("Updating nhan khau with CCCD: {}", cccd);
+
         NhanKhau nhanKhau = nhanKhauRepository.findById(cccd)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân khẩu."));
 
         String cccdChuHoMoi = request.getCccdChuHo();
         HoGiaDinh hoGiaDinhCu = nhanKhau.getHoGiaDinh();
+
+        // Lưu thông tin cũ để tạo nội dung thay đổi
+        String thongTinThayDoi = taoThongTinThayDoi(nhanKhau, request);
 
         if (cccdChuHoMoi != null && !cccdChuHoMoi.equals(hoGiaDinhCu.getCccdChuHo())) {
 
@@ -89,7 +111,60 @@ public class NhanKhauService {
 
         ghiLaiLichSu(cccd, "Cập nhật thông tin nhân khẩu.");
 
+        // Ghi nhận biến động cư dân (SAU KHI save thành công)
+        Integer idCanHo = updatedNhanKhau.getHoGiaDinh() != null && updatedNhanKhau.getHoGiaDinh().getCanHo() != null
+                ? updatedNhanKhau.getHoGiaDinh().getCanHo().getIdCanHo()
+                : null;
+
+        if (idCanHo != null && thongTinThayDoi != null) {
+            bienDongCuDanService.ghiNhanBienDong(
+                    LoaiBienDong.SUA_NHAN_KHAU,
+                    idCanHo,
+                    cccd,
+                    updatedNhanKhau.getHoVaTen(),
+                    thongTinThayDoi
+            );
+            log.info("Recorded bien dong: SUA_NHAN_KHAU for {} - {}", updatedNhanKhau.getHoVaTen(), thongTinThayDoi);
+        }
+
         return nhanKhauMapper.toNhanKhauResponse(updatedNhanKhau);
+    }
+
+    @Transactional
+    public void deleteNhanKhau(String cccd) {
+        log.info("Deleting nhan khau with CCCD: {}", cccd);
+
+        NhanKhau nhanKhau = nhanKhauRepository.findById(cccd)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân khẩu."));
+
+        // Lưu thông tin trước khi xóa
+        String hoVaTen = nhanKhau.getHoVaTen();
+        Integer idCanHo = nhanKhau.getHoGiaDinh() != null && nhanKhau.getHoGiaDinh().getCanHo() != null
+                ? nhanKhau.getHoGiaDinh().getCanHo().getIdCanHo()
+                : null;
+
+        // Giảm số thành viên
+        HoGiaDinh hoGiaDinh = nhanKhau.getHoGiaDinh();
+        if (hoGiaDinh != null) {
+            int soThanhVien = hoGiaDinh.getSoThanhVien() != null ? hoGiaDinh.getSoThanhVien() : 1;
+            hoGiaDinh.setSoThanhVien(Math.max(0, soThanhVien - 1));
+        }
+
+        nhanKhauRepository.delete(nhanKhau);
+
+        log.info("Deleted nhan khau successfully: {}", hoVaTen);
+
+        // Ghi nhận biến động cư dân (SAU KHI delete thành công)
+        if (idCanHo != null) {
+            bienDongCuDanService.ghiNhanBienDong(
+                    LoaiBienDong.XOA_NHAN_KHAU,
+                    idCanHo,
+                    cccd,
+                    hoVaTen,
+                    null
+            );
+            log.info("Recorded bien dong: XOA_NHAN_KHAU for {}", hoVaTen);
+        }
     }
 
     private void ghiLaiLichSu(String cccd, String hanhDong) {
@@ -103,6 +178,29 @@ public class NhanKhauService {
                 .nguoiThucHien(nguoiThucHien)
                 .build();
         lichSuThayDoiRepository.save(log);
+    }
+
+    private String taoThongTinThayDoi(NhanKhau nhanKhau, NhanKhauUpdateRequest request) {
+        List<String> thayDoi = new ArrayList<>();
+
+        if (request.getHoVaTen() != null && !request.getHoVaTen().equals(nhanKhau.getHoVaTen())) {
+            thayDoi.add("Đổi tên");
+        }
+        if (request.getSdt() != null && !request.getSdt().equals(nhanKhau.getSdt())) {
+            thayDoi.add("Cập nhật SĐT");
+        }
+        if (request.getEmail() != null && !request.getEmail().equals(nhanKhau.getEmail())) {
+            thayDoi.add("Cập nhật email");
+        }
+        if (request.getDiaChi() != null && !request.getDiaChi().equals(nhanKhau.getDiaChi())) {
+            thayDoi.add("Cập nhật địa chỉ");
+        }
+        if (request.getCccdChuHo() != null && nhanKhau.getHoGiaDinh() != null
+                && !request.getCccdChuHo().equals(nhanKhau.getHoGiaDinh().getCccdChuHo())) {
+            thayDoi.add("Chuyển hộ gia đình");
+        }
+
+        return thayDoi.isEmpty() ? null : String.join(", ", thayDoi);
     }
 
     @Transactional(readOnly = true)
@@ -171,5 +269,4 @@ public class NhanKhauService {
         }
         return lichSuThayDoiRepository.findAllByCccdNhanKhau(cccd);
     }
-
 }
