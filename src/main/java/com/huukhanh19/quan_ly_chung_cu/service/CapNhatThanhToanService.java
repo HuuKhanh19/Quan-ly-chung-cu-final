@@ -3,6 +3,7 @@ package com.huukhanh19.quan_ly_chung_cu.service;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.CapNhatThanhToanRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.PhiBatBuocResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.MonthlyFeeId;
+import com.huukhanh19.quan_ly_chung_cu.enums.LoaiBienDongThuPhi;
 import com.huukhanh19.quan_ly_chung_cu.entity.ThoiGianThuPhi;
 import com.huukhanh19.quan_ly_chung_cu.entity.TongThanhToan;
 import com.huukhanh19.quan_ly_chung_cu.enums.TrangThaiThanhToan;
@@ -29,6 +30,7 @@ public class CapNhatThanhToanService {
     TongThanhToanRepository tongThanhToanRepository;
     ThoiGianThuPhiRepository thoiGianThuPhiRepository;
     TongThanhToanService tongThanhToanService;
+    BienDongThuPhiService bienDongThuPhiService;
 
     @Transactional
     public PhiBatBuocResponse capNhatThanhToan(Integer idThoiGianThu, CapNhatThanhToanRequest request) {
@@ -58,8 +60,11 @@ public class CapNhatThanhToanService {
             // Kiểm tra xem đã thanh toán chưa
             if (tongThanhToan.getTrangThai() == TrangThaiThanhToan.DA_THANH_TOAN) {
                 log.warn("CanHo {} already paid, skipping", idCanHo);
-                continue; // Bỏ qua căn hộ đã thanh toán
+                continue;
             }
+
+            // Lưu số tiền để ghi nhận biến động
+            Integer soTienThanhToan = tongThanhToan.getTongPhi();
 
             // Cập nhật trạng thái thanh toán
             tongThanhToan.setSoTienDaNop(tongThanhToan.getTongPhi());
@@ -67,7 +72,18 @@ public class CapNhatThanhToanService {
             tongThanhToan.setTrangThai(TrangThaiThanhToan.DA_THANH_TOAN);
 
             danhSachCanCapNhat.add(tongThanhToan);
-            log.info("Marked canHo {} as paid", idCanHo);
+
+            // Ghi nhận biến động thu phí (SAU KHI cập nhật thành công)
+            bienDongThuPhiService.ghiNhanBienDongThuPhi(
+                    LoaiBienDongThuPhi.THU_PHI_BAT_BUOC,
+                    idCanHo,
+                    idThoiGianThu,
+                    null,
+                    soTienThanhToan,
+                    null
+            );
+
+            log.info("Marked canHo {} as paid and recorded bien dong", idCanHo);
         }
 
         // 4. Lưu tất cả các thay đổi

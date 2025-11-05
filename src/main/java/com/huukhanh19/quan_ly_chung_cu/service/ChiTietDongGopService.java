@@ -5,6 +5,7 @@ import com.huukhanh19.quan_ly_chung_cu.dto.response.ChiTietDongGopResponse;
 import com.huukhanh19.quan_ly_chung_cu.entity.CanHo;
 import com.huukhanh19.quan_ly_chung_cu.entity.ChiTietDongGop;
 import com.huukhanh19.quan_ly_chung_cu.entity.KhoanDongGop;
+import com.huukhanh19.quan_ly_chung_cu.enums.LoaiBienDongThuPhi;
 import com.huukhanh19.quan_ly_chung_cu.enums.TrangThaiDongGop;
 import com.huukhanh19.quan_ly_chung_cu.mapper.ChiTietDongGopMapper;
 import com.huukhanh19.quan_ly_chung_cu.repository.CanHoRepository;
@@ -32,6 +33,7 @@ public class ChiTietDongGopService {
     KhoanDongGopRepository khoanDongGopRepository;
     CanHoRepository canHoRepository;
     ChiTietDongGopMapper chiTietDongGopMapper;
+    BienDongThuPhiService bienDongThuPhiService;
 
     @Transactional
     public ChiTietDongGopResponse createChiTietDongGop(ChiTietDongGopCreationRequest request) {
@@ -85,7 +87,19 @@ public class ChiTietDongGopService {
 
         log.info("Created ChiTietDongGop successfully with ID: {}", chiTietDongGop.getIdChiTiet());
 
-        // 9. Trả về response
+        // 9. Ghi nhận biến động thu phí (SAU KHI save thành công)
+        bienDongThuPhiService.ghiNhanBienDongThuPhi(
+                LoaiBienDongThuPhi.DONG_GOP_TU_NGUYEN,
+                request.getIdCanHo(),
+                null,
+                request.getIdKhoanDongGop(),
+                request.getSoTienDongGop(),
+                khoanDongGop.getTenKhoanDongGop()
+        );
+
+        log.info("Recorded bien dong: DONG_GOP_TU_NGUYEN for canHo {}", request.getIdCanHo());
+
+        // 10. Trả về response
         return chiTietDongGopMapper.toResponse(chiTietDongGop);
     }
 
