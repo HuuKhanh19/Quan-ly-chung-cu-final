@@ -15,7 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('QUANLY')")
+@PreAuthorize("hasAnyRole('QUANLY', 'KETOAN')")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class CanHoService {
