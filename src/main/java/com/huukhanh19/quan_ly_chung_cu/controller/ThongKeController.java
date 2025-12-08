@@ -1,5 +1,6 @@
 package com.huukhanh19.quan_ly_chung_cu.controller;
 
+import com.huukhanh19.quan_ly_chung_cu.dto.request.ThongKeTheoNamRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.request.ThongKeThoiGianRequest;
 import com.huukhanh19.quan_ly_chung_cu.dto.response.*;
 import com.huukhanh19.quan_ly_chung_cu.service.ThongKeService;
@@ -44,6 +45,34 @@ public class ThongKeController {
     public ApiResponse<ThongKeTamVangResponse> thongKeTamTruTamVang() {
         return ApiResponse.<ThongKeTamVangResponse>builder()
                 .result(thongKeService.thongKeTamTruTamVang())
+                .build();
+    }
+
+    // Thêm các endpoints này vào ThongKeController.java
+
+    /**
+     * Thống kê theo tháng trong năm
+     * GET /thong-ke/theo-thang?nam=2024
+     */
+    @PostMapping("/theo-thang")
+    public ApiResponse<ThongKeTheoThangResponse> thongKeTheoThang(
+            @RequestBody @Valid ThongKeTheoNamRequest request) {
+        log.info("API thống kê theo tháng cho năm: {}", request.getNam());
+        return ApiResponse.<ThongKeTheoThangResponse>builder()
+                .result(thongKeService.thongKeTheoThang(request))
+                .build();
+    }
+
+    /**
+     * Thống kê theo quý trong năm
+     * GET /thong-ke/theo-quy?nam=2024
+     */
+    @PostMapping("/theo-quy")
+    public ApiResponse<ThongKeTheoQuyResponse> thongKeTheoQuy(
+            @RequestBody @Valid ThongKeTheoNamRequest request) {
+        log.info("API thống kê theo quý cho năm: {}", request.getNam());
+        return ApiResponse.<ThongKeTheoQuyResponse>builder()
+                .result(thongKeService.thongKeTheoQuy(request))
                 .build();
     }
 

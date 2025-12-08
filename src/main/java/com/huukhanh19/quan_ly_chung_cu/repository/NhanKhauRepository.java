@@ -61,4 +61,19 @@ public interface NhanKhauRepository extends JpaRepository<NhanKhau, String>, Jpa
 
     @Query("SELECT COUNT(nk) FROM NhanKhau nk WHERE nk.ngayTao BETWEEN :startDate AND :endDate")
     long countByNgayTaoBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    // Đếm số người chuyển đến (tạo mới) trong một khoảng thời gian
+    @Query("SELECT COUNT(nk) FROM NhanKhau nk WHERE nk.ngayTao BETWEEN :startDate AND :endDate")
+    long countChuyenDenBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    // Đếm số người chuyển đi (tạm vắng) trong một khoảng thời gian
+// Lưu ý: Cần join với BangTamVang
+    @Query("SELECT COUNT(DISTINCT btv.cccd) FROM BangTamVang btv " +
+            "WHERE btv.loaiDangKy = 'TAM_VANG' " +
+            "AND btv.ngayBatDau BETWEEN :startDate AND :endDate")
+    long countChuyenDiBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    // Đếm tổng dân số tại một thời điểm (trước một ngày cụ thể)
+    @Query("SELECT COUNT(nk) FROM NhanKhau nk WHERE nk.ngayTao <= :date")
+    long countDanSoAtDate(@Param("date") LocalDate date);
 }
