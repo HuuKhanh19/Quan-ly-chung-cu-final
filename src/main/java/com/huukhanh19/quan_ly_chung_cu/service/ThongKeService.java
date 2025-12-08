@@ -87,15 +87,25 @@ public class ThongKeService {
     }
 
     public ThongKeTamVangResponse thongKeTamTruTamVang() {
-        // 1. Thống kê theo Loại đăng ký
+        // 1. Thống kê theo Loại đăng ký trong bảng bang_tam_vang
         long soLuongTamTru = bangTamVangRepository.countByLoaiDangKy(LoaiDangKy.TAM_TRU);
         long soLuongTamVang = bangTamVangRepository.countByLoaiDangKy(LoaiDangKy.TAM_VANG);
 
-        // 2. Xây dựng và trả về đối tượng response
+        // 2. Thống kê nhân khẩu thường trú (từ bảng nhan_khau)
+        long soLuongThuongTru = nhanKhauRepository.count() - soLuongTamVang;
+
+        // 3. Tính tổng
+        long tongSo = soLuongThuongTru + soLuongTamTru + soLuongTamVang;
+
+        log.info("Thống kê: Thường trú={}, Tạm trú={}, Tạm vắng={}, Tổng={}",
+                soLuongThuongTru, soLuongTamTru, soLuongTamVang, tongSo);
+
+        // 4. Xây dựng và trả về đối tượng response
         return ThongKeTamVangResponse.builder()
+                .soLuongThuongTru(soLuongThuongTru)
                 .soLuongTamTru(soLuongTamTru)
                 .soLuongTamVang(soLuongTamVang)
-                .tongSo(soLuongTamTru + soLuongTamVang)
+                .tongSo(tongSo)
                 .build();
     }
 
