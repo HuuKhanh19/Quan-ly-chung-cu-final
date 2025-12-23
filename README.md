@@ -102,7 +102,7 @@ quan-ly-chung-cu-backend/
 │   └── application.properties
 └── database/
     ├── schema.sql        # Cấu trúc bảng
-    └── insert_data_final.sql  # Dữ liệu mẫu
+    └── insert_data.sql  # Dữ liệu mẫu
 ```
 
 ---
